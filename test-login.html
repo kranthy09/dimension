@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login</title>
+</head>
+<body>
+    <h1>Test Admin Login</h1>
+    <div>
+        <input type="email" id="email" value="admin@portfolio.com" placeholder="Email">
+        <input type="password" id="password" value="admin123" placeholder="Password">
+        <button onclick="testLogin()">Test Login</button>
+    </div>
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+
+    <script>
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = 'Testing...';
+
+            try {
+                console.log('Attempting login to:', 'http://localhost:8000/api/v1/auth/login');
+
+                const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (!response.ok) {
+                    resultDiv.innerHTML = `<strong>Error:</strong> ${data.detail || 'Login failed'}`;
+                    resultDiv.style.background = '#fee';
+                } else {
+                    resultDiv.innerHTML = `<strong>Success!</strong><br>Token: ${data.access_token.substring(0, 50)}...`;
+                    resultDiv.style.background = '#efe';
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                resultDiv.innerHTML = `<strong>Network Error:</strong> ${error.message}<br><br>
+                    This usually means:<br>
+                    1. Backend is not running on localhost:8000<br>
+                    2. CORS is blocking the request<br>
+                    3. Network connectivity issue<br><br>
+                    Check browser console for more details.`;
+                resultDiv.style.background = '#ffc';
+            }
+        }
+    </script>
+</body>
+</html>

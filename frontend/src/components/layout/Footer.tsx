@@ -1,0 +1,87 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+import { Container } from './Container'
+
+export function Footer() {
+  const pathname = usePathname()
+  const currentYear = new Date().getFullYear()
+
+  // Don't render footer on admin pages
+  if (pathname?.startsWith('/admin')) {
+    return null
+  }
+
+  return (
+    <footer
+      className="relative mt-32 border-t"
+      style={{
+        borderColor: 'var(--border)',
+      }}
+    >
+      {/* Gradient accent line */}
+      <div
+        className="absolute top-0 left-0 right-0 h-[2px]"
+        style={{
+          background: 'var(--gradient-evolution)',
+          opacity: 0.3,
+        }}
+      />
+
+      <Container>
+        <div className="py-12">
+          {/* Main content */}
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            {/* Brand */}
+            <div className="text-center md:text-left">
+              <h3 className="text-xl font-bold gradient-text mb-2">Portfolio</h3>
+              <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+                Building with <span style={{ color: 'var(--energy-500)' }}>energy</span> &amp;{' '}
+                <span style={{ color: 'var(--life-500)' }}>evolution</span>
+              </p>
+            </div>
+
+            {/* Links */}
+            <div className="flex gap-8">
+              <a
+                href="/blog"
+                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)]"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                Blog
+              </a>
+              <a
+                href="/projects"
+                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)]"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                Projects
+              </a>
+              <a
+                href="/case-studies"
+                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)]"
+                style={{ color: 'var(--text-secondary)' }}
+              >
+                Case Studies
+              </a>
+              <a
+                href="/admin/upload"
+                className="text-sm font-medium transition-colors hover:text-[var(--life-500)]"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Admin
+              </a>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div className="mt-8 pt-8 border-t text-center" style={{ borderColor: 'var(--border)' }}>
+            <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+              &copy; {currentYear} Portfolio. Crafted with passion and code.
+            </p>
+          </div>
+        </div>
+      </Container>
+    </footer>
+  )
+}
