@@ -3,7 +3,8 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = "postgresql://user:pass@db:5432/portfolio"
+    # Default is for local development only - override with environment variable
+    DATABASE_URL: str = "postgresql://portfolio:portfolio_pass@db:5432/portfolio"
 
     # File Storage
     MEDIA_ROOT: str = "/app/media"
