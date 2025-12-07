@@ -56,11 +56,11 @@ fi
 # Build and start services
 echo ""
 echo "🔨 Building Docker images..."
-docker-compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml build
 
 echo ""
 echo "🚀 Starting services..."
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 
 # Wait for services to be healthy
 echo ""
@@ -70,7 +70,7 @@ sleep 10
 # Check service status
 echo ""
 echo "📊 Service Status:"
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml ps
 
 # Test health endpoint
 echo ""
@@ -84,7 +84,7 @@ fi
 # Show logs
 echo ""
 echo "📝 Recent logs:"
-docker-compose -f docker-compose.prod.yml logs --tail=20
+docker compose -f docker-compose.prod.yml logs --tail=20
 
 echo ""
 echo "========================================="
@@ -98,8 +98,8 @@ echo "Admin panel:"
 echo "  https://$DOMAIN/admin/login"
 echo ""
 echo "Useful commands:"
-echo "  View logs:    docker-compose -f docker-compose.prod.yml logs -f"
-echo "  Stop:         docker-compose -f docker-compose.prod.yml down"
-echo "  Restart:      docker-compose -f docker-compose.prod.yml restart"
-echo "  Status:       docker-compose -f docker-compose.prod.yml ps"
+echo "  View logs:    docker compose -f docker-compose.prod.yml logs -f"
+echo "  Stop:         docker compose -f docker-compose.prod.yml down"
+echo "  Restart:      docker compose -f docker-compose.prod.yml restart"
+echo "  Status:       docker compose -f docker-compose.prod.yml ps"
 echo ""

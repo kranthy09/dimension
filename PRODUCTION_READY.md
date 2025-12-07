@@ -43,7 +43,7 @@ This document confirms that the Dimension Portfolio project is now production-re
 **Issue:** No production Docker configurations existed.
 
 **Files Created:**
-- ✅ `/docker-compose.prod.yml` - Complete production docker-compose
+- ✅ `/docker compose.prod.yml` - Complete production docker compose
 - ✅ `/frontend/Dockerfile.prod` - Multi-stage production Dockerfile
 - ✅ `/nginx/nginx.conf` - Full nginx configuration with SSL, rate limiting, security headers
 
@@ -119,14 +119,14 @@ Before deploying, you MUST:
 ### Option 2: Manual Deployment
 ```bash
 # Build and start
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker compose.prod.yml up --build -d
 
 # Create admin user
-docker-compose -f docker-compose.prod.yml exec backend \
+docker compose -f docker compose.prod.yml exec backend \
   python3 scripts/create_admin.py --email admin@domain.com --password xxx --name "Admin"
 
 # Check status
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 ```
 
 ## File Structure Summary 📁
@@ -134,7 +134,7 @@ docker-compose -f docker-compose.prod.yml ps
 ### New Files
 ```
 dimension/
-├── docker-compose.prod.yml          # Production compose config
+├── docker compose.prod.yml          # Production compose config
 ├── .env.production.example           # Environment template
 ├── deploy.sh                         # Deployment script
 ├── DEPLOYMENT.md                     # Full deployment guide
@@ -186,28 +186,28 @@ Before going live, test:
 
 ### View Logs
 ```bash
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 ```
 
 ### Check Status
 ```bash
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 ```
 
 ### Restart Services
 ```bash
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker compose.prod.yml restart
 ```
 
 ### Update Application
 ```bash
 git pull origin main
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker compose.prod.yml up --build -d
 ```
 
 ### Backup Database
 ```bash
-docker-compose -f docker-compose.prod.yml exec -T db \
+docker compose -f docker compose.prod.yml exec -T db \
   pg_dump -U portfolio_user portfolio_prod > backup.sql
 ```
 
@@ -259,19 +259,19 @@ If deployment fails:
 
 1. Stop services:
    ```bash
-   docker-compose -f docker-compose.prod.yml down
+   docker compose -f docker compose.prod.yml down
    ```
 
 2. Restore from backup:
    ```bash
-   docker-compose -f docker-compose.prod.yml up -d db
-   docker-compose -f docker-compose.prod.yml exec -T db \
+   docker compose -f docker compose.prod.yml up -d db
+   docker compose -f docker compose.prod.yml exec -T db \
      psql -U portfolio_user portfolio_prod < backup.sql
    ```
 
 3. Restart all services:
    ```bash
-   docker-compose -f docker-compose.prod.yml up -d
+   docker compose -f docker compose.prod.yml up -d
    ```
 
 ## What's Next? 🎯

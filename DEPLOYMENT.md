@@ -177,7 +177,7 @@ Paste your production environment variables from Part 1, Step 2.
 
 ```bash
 # Stop any running services on port 80/443
-sudo docker-compose down
+sudo docker compose down
 
 # Generate SSL certificate with certbot
 sudo certbot certonly --standalone \
@@ -203,20 +203,20 @@ sudo chown -R $USER:$USER nginx/ssl
 
 ```bash
 # Build and start in detached mode
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker compose.prod.yml up --build -d
 
 # Check status
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 
 # View logs
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 ```
 
 ### Step 5: Create Admin User
 
 ```bash
 # Create admin user
-docker-compose -f docker-compose.prod.yml exec backend python3 scripts/create_admin.py \
+docker compose -f docker compose.prod.yml exec backend python3 scripts/create_admin.py \
   --email admin@yourdomain.com \
   --password YOUR_SECURE_PASSWORD \
   --name "Your Name"
@@ -275,7 +275,7 @@ DATE=$(date +%Y%m%d_%H%M%S)
 mkdir -p $BACKUP_DIR
 
 # Backup database
-docker-compose -f /home/portfolio/dimension/docker-compose.prod.yml exec -T db \
+docker compose -f /home/portfolio/dimension/docker compose.prod.yml exec -T db \
   pg_dump -U portfolio_user portfolio_prod > $BACKUP_DIR/db_$DATE.sql
 
 # Backup media files
@@ -327,7 +327,7 @@ sudo crontab -e
 Add this line to renew certificates monthly:
 
 ```
-0 0 1 * * certbot renew --quiet && cp /etc/letsencrypt/live/yourdomain.com/*.pem /home/portfolio/dimension/nginx/ssl/ && cd /home/portfolio/dimension && docker-compose -f docker-compose.prod.yml restart nginx
+0 0 1 * * certbot renew --quiet && cp /etc/letsencrypt/live/yourdomain.com/*.pem /home/portfolio/dimension/nginx/ssl/ && cd /home/portfolio/dimension && docker compose -f docker compose.prod.yml restart nginx
 ```
 
 Test renewal (dry run):
@@ -346,29 +346,29 @@ sudo certbot renew --dry-run
 cd /home/portfolio/dimension
 
 # All services
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 
 # Specific service
-docker-compose -f docker-compose.prod.yml logs -f backend
-docker-compose -f docker-compose.prod.yml logs -f frontend
-docker-compose -f docker-compose.prod.yml logs -f nginx
+docker compose -f docker compose.prod.yml logs -f backend
+docker compose -f docker compose.prod.yml logs -f frontend
+docker compose -f docker compose.prod.yml logs -f nginx
 ```
 
 ### Check Service Status
 
 ```bash
-docker-compose -f docker-compose.prod.yml ps
-docker-compose -f docker-compose.prod.yml top
+docker compose -f docker compose.prod.yml ps
+docker compose -f docker compose.prod.yml top
 ```
 
 ### Restart Services
 
 ```bash
 # Restart all
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker compose.prod.yml restart
 
 # Restart specific service
-docker-compose -f docker-compose.prod.yml restart backend
+docker compose -f docker compose.prod.yml restart backend
 ```
 
 ### Update Application
@@ -380,10 +380,10 @@ cd /home/portfolio/dimension
 git pull origin main
 
 # Rebuild and restart
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker compose.prod.yml up --build -d
 
 # Check for errors
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 ```
 
 ---
@@ -434,28 +434,28 @@ journalctl -xe
 
 ```bash
 # Check logs
-docker-compose -f docker-compose.prod.yml logs
+docker compose -f docker compose.prod.yml logs
 
 # Check if ports are available
 sudo netstat -tulpn | grep :80
 sudo netstat -tulpn | grep :443
 
 # Rebuild from scratch
-docker-compose -f docker-compose.prod.yml down -v
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker compose.prod.yml down -v
+docker compose -f docker compose.prod.yml up --build -d
 ```
 
 ### Database Issues
 
 ```bash
 # Check database status
-docker-compose -f docker-compose.prod.yml exec db pg_isready -U portfolio_user
+docker compose -f docker compose.prod.yml exec db pg_isready -U portfolio_user
 
 # Access database
-docker-compose -f docker-compose.prod.yml exec db psql -U portfolio_user portfolio_prod
+docker compose -f docker compose.prod.yml exec db psql -U portfolio_user portfolio_prod
 
 # Run migrations manually
-docker-compose -f docker-compose.prod.yml exec backend alembic upgrade head
+docker compose -f docker compose.prod.yml exec backend alembic upgrade head
 ```
 
 ### SSL Certificate Issues
@@ -469,17 +469,17 @@ sudo certbot renew --force-renewal
 
 # Copy new certificates
 sudo cp /etc/letsencrypt/live/yourdomain.com/*.pem nginx/ssl/
-docker-compose -f docker-compose.prod.yml restart nginx
+docker compose -f docker compose.prod.yml restart nginx
 ```
 
 ### Frontend Build Fails
 
 ```bash
 # Clear Next.js cache
-docker-compose -f docker-compose.prod.yml exec frontend rm -rf .next
+docker compose -f docker compose.prod.yml exec frontend rm -rf .next
 
 # Rebuild frontend only
-docker-compose -f docker-compose.prod.yml up --build -d frontend
+docker compose -f docker compose.prod.yml up --build -d frontend
 ```
 
 ---
@@ -514,31 +514,31 @@ docker-compose -f docker-compose.prod.yml up --build -d frontend
 ### Start Services
 
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker compose.prod.yml up -d
 ```
 
 ### Stop Services
 
 ```bash
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker compose.prod.yml down
 ```
 
 ### View Logs
 
 ```bash
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 ```
 
 ### Restart All
 
 ```bash
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker compose.prod.yml restart
 ```
 
 ### Check Status
 
 ```bash
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 ```
 
 ### Backup Now
@@ -550,7 +550,7 @@ sudo /root/backup.sh
 ### Update Application
 
 ```bash
-git pull && docker-compose -f docker-compose.prod.yml up --build -d
+git pull && docker compose -f docker compose.prod.yml up --build -d
 ```
 
 ---
@@ -578,7 +578,7 @@ git pull && docker-compose -f docker-compose.prod.yml up --build -d
 
 ### Logs Locations
 
-- Application logs: `docker-compose logs`
+- Application logs: `docker compose logs`
 - Nginx logs: Inside container `/var/log/nginx/`
 - Backup logs: `/var/log/portfolio-backup.log`
 - System logs: `/var/log/syslog`

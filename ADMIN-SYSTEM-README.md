@@ -155,7 +155,7 @@ Authorization: Bearer <access_token>
 To create a new admin user, run this command:
 
 ```bash
-docker-compose exec backend python3 scripts/create_admin.py \
+docker compose exec backend python3 scripts/create_admin.py \
   --email newadmin@example.com \
   --password securepassword123 \
   --name "New Admin Name"
@@ -164,7 +164,7 @@ docker-compose exec backend python3 scripts/create_admin.py \
 Or run interactively:
 
 ```bash
-docker-compose exec backend python3 scripts/create_admin.py
+docker compose exec backend python3 scripts/create_admin.py
 ```
 
 ## Security Features
@@ -235,8 +235,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES=10080  # 7 days
 
 **Cannot login:**
 - Verify credentials are correct
-- Check backend logs: `docker-compose logs backend`
-- Ensure database migration ran: `docker-compose exec backend alembic current`
+- Check backend logs: `docker compose logs backend`
+- Ensure database migration ran: `docker compose exec backend alembic current`
 
 **Upload fails:**
 - Check you're logged in as admin
@@ -246,7 +246,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=10080  # 7 days
 **Dashboard not loading:**
 - Clear browser localStorage
 - Check browser console for errors
-- Verify frontend is running: `docker-compose ps`
+- Verify frontend is running: `docker compose ps`
 
 ## Next Steps
 

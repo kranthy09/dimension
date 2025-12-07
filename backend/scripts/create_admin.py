@@ -2,10 +2,10 @@
 Script to create an admin user
 
 Usage:
-    docker-compose exec backend python3 scripts/create_admin.py
+    docker compose exec backend python3 scripts/create_admin.py
 
 Or with custom values:
-    docker-compose exec backend python3 scripts/create_admin.py \
+    docker compose exec backend python3 scripts/create_admin.py \
         --email admin@example.com \
         --password yourpassword \
         --name "Admin User"

@@ -7,7 +7,7 @@ echo "Cleaning up cache and temporary files..."
 
 # Stop Docker containers first (they may have created root-owned files)
 echo "Stopping Docker containers..."
-docker-compose down 2>/dev/null || true
+docker compose down 2>/dev/null || true
 
 # Remove Python cache files (may require sudo if owned by root)
 echo "Removing Python cache files..."

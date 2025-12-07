@@ -82,7 +82,7 @@ crontab -e
 
 1. **Development Files:**
    ```bash
-   rm docker-compose.yml           # If using prod version only
+   rm docker compose.yml           # If using prod version only
    rm frontend/.env.local          # After copying to .env
    rm backend/.env                 # After copying to .env
    ```
@@ -105,7 +105,7 @@ crontab -e
 
 **Files You MUST Keep:**
 - ✅ `.env` (your production config)
-- ✅ `docker-compose.prod.yml`
+- ✅ `docker compose.prod.yml`
 - ✅ All source code (backend/app, frontend/src)
 - ✅ `nginx/nginx.conf`
 - ✅ `nginx/ssl/` (certificates)
@@ -273,10 +273,10 @@ cd /home/portfolio/dimension
 git pull origin main
 
 # 4. Rebuild and restart
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker compose.prod.yml up --build -d
 
 # 5. Check logs
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 ```
 
 **Takes:** 5-10 minutes
@@ -296,7 +296,7 @@ docker-compose -f docker-compose.prod.yml logs -f
 
 2. **View logs:**
    ```bash
-   docker-compose -f docker-compose.prod.yml logs -f
+   docker compose -f docker compose.prod.yml logs -f
    ```
 
 3. **Check resource usage:**
@@ -308,7 +308,7 @@ docker-compose -f docker-compose.prod.yml logs -f
 
 4. **Service status:**
    ```bash
-   docker-compose -f docker-compose.prod.yml ps
+   docker compose -f docker compose.prod.yml ps
    ```
 
 **Optional external monitoring:**
@@ -374,18 +374,18 @@ nslookup yourdomain.com
 
 ```bash
 # Check logs
-docker-compose -f docker-compose.prod.yml logs
+docker compose -f docker compose.prod.yml logs
 
 # Check if ports are free
 sudo netstat -tulpn | grep :80
 sudo netstat -tulpn | grep :443
 
 # Restart services
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker compose.prod.yml restart
 
 # Rebuild from scratch
-docker-compose -f docker-compose.prod.yml down
-docker-compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker compose.prod.yml down
+docker compose -f docker compose.prod.yml up --build -d
 ```
 
 ### Q: SSL certificate not working?
@@ -401,23 +401,23 @@ sudo certbot renew --force-renewal
 sudo cp /etc/letsencrypt/live/yourdomain.com/*.pem nginx/ssl/
 
 # Restart nginx
-docker-compose -f docker-compose.prod.yml restart nginx
+docker compose -f docker compose.prod.yml restart nginx
 ```
 
 ### Q: Database connection failed?
 
 ```bash
 # Check database is running
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 
 # Check database health
-docker-compose -f docker-compose.prod.yml exec db pg_isready -U portfolio_user
+docker compose -f docker compose.prod.yml exec db pg_isready -U portfolio_user
 
 # Verify .env credentials
 cat .env | grep POSTGRES
 
 # Access database console
-docker-compose -f docker-compose.prod.yml exec db psql -U portfolio_user portfolio_prod
+docker compose -f docker compose.prod.yml exec db psql -U portfolio_user portfolio_prod
 ```
 
 ---
@@ -428,22 +428,22 @@ docker-compose -f docker-compose.prod.yml exec db psql -U portfolio_user portfol
 
 ```bash
 # Start
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker compose.prod.yml up -d
 
 # Stop
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker compose.prod.yml down
 
 # Logs
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 
 # Status
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 
 # Restart
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker compose.prod.yml restart
 
 # Update
-git pull && docker-compose -f docker-compose.prod.yml up --build -d
+git pull && docker compose -f docker compose.prod.yml up --build -d
 ```
 
 **Files to keep safe:**

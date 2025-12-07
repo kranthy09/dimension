@@ -7,7 +7,7 @@ This guide helps you remove files that aren't needed for production deployment t
 ### 1. Development Docker Compose (if using production)
 ```bash
 # If you're deploying to production and won't run locally anymore
-rm docker-compose.yml  # Keep only docker-compose.prod.yml
+rm docker compose.yml  # Keep only docker compose.prod.yml
 ```
 
 **Space saved:** ~1KB
@@ -88,7 +88,7 @@ rm QUICKSTART.md            # If you don't need quick reference
 ```bash
 # Never delete these:
 .env                          # Your production configuration
-docker-compose.prod.yml       # Production deployment config
+docker compose.prod.yml       # Production deployment config
 deploy.sh                     # Deployment script
 frontend/Dockerfile.prod      # Production frontend build
 backend/Dockerfile            # Backend container
@@ -120,7 +120,7 @@ If you're deploying to production and won't develop locally:
 
 ```bash
 # 1. Remove development files
-rm docker-compose.yml
+rm docker compose.yml
 rm frontend/.env.local
 rm backend/.env
 
@@ -245,7 +245,7 @@ docker system prune -a --volumes
 ```
 dimension/
 ├── .env                          # Config
-├── docker-compose.prod.yml       # Deployment
+├── docker compose.prod.yml       # Deployment
 ├── deploy.sh                     # Helper script
 ├── backend/
 │   ├── app/                      # Code
@@ -288,7 +288,7 @@ find backend -type d -name "__pycache__" -exec rm -rf {} +
 # Upload to VPS with:
 # - All source code
 # - .env file (create on server)
-# - docker-compose.prod.yml
+# - docker compose.prod.yml
 # - All Dockerfiles and configs
 ```
 
@@ -300,7 +300,7 @@ find backend -type d -name "__pycache__" -exec rm -rf {} +
 
 1. **Never delete:**
    - `.env` (your config)
-   - Docker files (Dockerfile, docker-compose.prod.yml)
+   - Docker files (Dockerfile, docker compose.prod.yml)
    - Application source code (backend/app, frontend/src)
    - Database migrations (backend/alembic)
 

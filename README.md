@@ -92,13 +92,13 @@ Copy all code from the artifacts:
 
 ```bash
 # Start everything
-docker-compose up -d
+docker compose up -d
 
 # Run migrations
-docker-compose exec backend alembic upgrade head
+docker compose exec backend alembic upgrade head
 
 # Check services
-docker-compose ps
+docker compose ps
 ```
 
 You should see:
@@ -414,8 +414,8 @@ http://localhost:8000/docs
 
 ### Check Logs
 ```bash
-docker-compose logs -f backend
-docker-compose logs -f frontend
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
 
 ---
@@ -426,8 +426,8 @@ docker-compose logs -f frontend
 Perfect for personal sites, small traffic.
 
 ```bash
-# Production docker-compose
-docker-compose -f docker-compose.prod.yml up -d
+# Production docker compose
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### Option 2: Separate Services

@@ -12,20 +12,20 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Check if docker-compose is running
+# Check if docker compose is running
 echo "1️⃣  Checking Docker services..."
-if docker-compose ps | grep -q "Up"; then
+if docker compose ps | grep -q "Up"; then
     echo -e "${GREEN}✓ Docker services are running${NC}"
 else
     echo -e "${RED}✗ Docker services are not running${NC}"
-    echo "   Run: docker-compose up -d"
+    echo "   Run: docker compose up -d"
     exit 1
 fi
 echo ""
 
 # Check database
 echo "2️⃣  Checking database..."
-if docker-compose ps db | grep -q "healthy"; then
+if docker compose ps db | grep -q "healthy"; then
     echo -e "${GREEN}✓ Database is healthy${NC}"
 else
     echo -e "${YELLOW}⚠ Database may not be ready yet${NC}"
@@ -39,7 +39,7 @@ if curl -s http://localhost:8000/health | grep -q "healthy"; then
     echo "   API Docs: http://localhost:8000/docs"
 else
     echo -e "${RED}✗ Backend is not responding${NC}"
-    echo "   Check logs: docker-compose logs backend"
+    echo "   Check logs: docker compose logs backend"
 fi
 echo ""
 
@@ -50,7 +50,7 @@ if curl -s http://localhost:3000 > /dev/null 2>&1; then
     echo "   URL: http://localhost:3000"
 else
     echo -e "${RED}✗ Frontend is not responding${NC}"
-    echo "   Check logs: docker-compose logs frontend"
+    echo "   Check logs: docker compose logs frontend"
 fi
 echo ""
 

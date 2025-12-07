@@ -50,7 +50,7 @@ ssh root@YOUR_VPS_IP
 curl -fsSL https://get.docker.com | sh
 
 # Install Docker Compose and certbot
-apt install docker-compose certbot -y
+apt install docker compose certbot -y
 
 # Clone your repository
 git clone https://github.com/YOUR_USER/dimension.git
@@ -82,7 +82,7 @@ chmod +x deploy.sh
 ./deploy.sh
 
 # Create admin user
-docker-compose -f docker-compose.prod.yml exec backend \
+docker compose -f docker compose.prod.yml exec backend \
   python3 scripts/create_admin.py \
   --email admin@yourdomain.com \
   --password your_password \
@@ -104,14 +104,14 @@ Admin: `https://yourdomain.com/admin/login`
 **SSL certificate fails:**
 ```bash
 # Make sure port 80 is free
-docker-compose down
+docker compose down
 # Then retry certbot command
 ```
 
 **Services won't start:**
 ```bash
 # Check logs
-docker-compose -f docker-compose.prod.yml logs
+docker compose -f docker compose.prod.yml logs
 
 # Verify .env file exists and has correct values
 cat .env
@@ -120,7 +120,7 @@ cat .env
 **Can't connect to database:**
 ```bash
 # Check database is running
-docker-compose -f docker-compose.prod.yml ps
+docker compose -f docker compose.prod.yml ps
 
 # Verify credentials in .env match
 ```
@@ -131,16 +131,16 @@ docker-compose -f docker-compose.prod.yml ps
 
 ```bash
 # View logs
-docker-compose -f docker-compose.prod.yml logs -f
+docker compose -f docker compose.prod.yml logs -f
 
 # Restart services
-docker-compose -f docker-compose.prod.yml restart
+docker compose -f docker compose.prod.yml restart
 
 # Stop all
-docker-compose -f docker-compose.prod.yml down
+docker compose -f docker compose.prod.yml down
 
 # Update application
-git pull && docker-compose -f docker-compose.prod.yml up --build -d
+git pull && docker compose -f docker compose.prod.yml up --build -d
 ```
 
 ---
