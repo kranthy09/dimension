@@ -187,7 +187,7 @@ docker stats dimension-backend-1
 docker compose -f docker-compose.prod.yml exec backend bash
 
 # Access database
-docker compose -f docker-compose.prod.yml exec db psql -U portfolio_user -d portfolio_prod
+docker compose -f docker-compose.prod.yml exec db psql -U frontuser -d portfolio_prod
 
 # Run one-off command
 docker compose -f docker-compose.prod.yml exec backend python3 -c "print('Hello')"
@@ -238,13 +238,13 @@ docker compose -f docker-compose.prod.yml logs backend | grep -i "alembic\|migra
 ### Database Issues
 ```bash
 # Check if database is ready
-docker compose -f docker-compose.prod.yml exec db pg_isready -U portfolio_user
+docker compose -f docker-compose.prod.yml exec db pg_isready -U frontuser
 
 # Check database logs
 docker compose -f docker-compose.prod.yml logs db | grep -i "error\|fatal"
 
 # List databases
-docker compose -f docker-compose.prod.yml exec db psql -U portfolio_user -l
+docker compose -f docker-compose.prod.yml exec db psql -U frontuser -l
 ```
 
 ### Frontend Issues

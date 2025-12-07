@@ -8,11 +8,11 @@ DOMAIN=evolune.dev
 
 # Database Configuration
 POSTGRES_DB=portfolio_prod
-POSTGRES_USER=portfolio_user
+POSTGRES_USER=frontuser
 POSTGRES_PASSWORD=your_actual_password_here
 
 # Backend Configuration
-DATABASE_URL=postgresql://portfolio_user:your_actual_password_here@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:your_actual_password_here@db:5432/portfolio_prod
 SECRET_KEY=your_secret_key_here
 
 # Frontend Configuration (optional for production)
@@ -23,22 +23,22 @@ NEXT_PUBLIC_API_URL=https://evolune.dev
 
 ### ❌ WRONG - Username mismatch:
 ```env
-POSTGRES_USER=portfolio_user
+POSTGRES_USER=frontuser
 DATABASE_URL=postgresql://portfolio:password@db:5432/portfolio_prod
-                          ^^^^^^^^^ WRONG! Must be portfolio_user
+                          ^^^^^^^^^ WRONG! Must be frontuser
 ```
 
 ### ❌ WRONG - Special characters not encoded:
 ```env
 # If your password is: my@pass#123
-DATABASE_URL=postgresql://portfolio_user:my@pass#123@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:my@pass#123@db:5432/portfolio_prod
                                             ^^^ @ causes issues!
 ```
 
 ### ✅ CORRECT - Special characters encoded:
 ```env
 # Password: my@pass#123
-DATABASE_URL=postgresql://portfolio_user:my%40pass%23123@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:my%40pass%23123@db:5432/portfolio_prod
                                             ^^^^^ @ becomes %40
                                                   ^^^^^ # becomes %23
 ```
@@ -74,7 +74,7 @@ nano .env
 
 ### Step 3: Make sure ALL these match:
 
-1. **POSTGRES_USER** = `portfolio_user`
+1. **POSTGRES_USER** = `frontuser`
 2. **POSTGRES_DB** = `portfolio_prod`
 3. **POSTGRES_PASSWORD** = Your actual password
 4. **DATABASE_URL** format:
@@ -89,9 +89,9 @@ If your password is `SecurePass123!`, your .env should be:
 ```env
 DOMAIN=evolune.dev
 POSTGRES_DB=portfolio_prod
-POSTGRES_USER=portfolio_user
+POSTGRES_USER=frontuser
 POSTGRES_PASSWORD=SecurePass123!
-DATABASE_URL=postgresql://portfolio_user:SecurePass123%21@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:SecurePass123%21@db:5432/portfolio_prod
 #                                                      ^^^^ ! becomes %21
 SECRET_KEY=abc123def456...
 NEXT_PUBLIC_API_URL=https://evolune.dev
@@ -121,7 +121,7 @@ Run this to check your configuration:
 cat .env | grep DATABASE_URL
 
 # Verify the format matches:
-# postgresql://portfolio_user:PASSWORD@db:5432/portfolio_prod
+# postgresql://frontuser:PASSWORD@db:5432/portfolio_prod
 ```
 
 ## 💡 Generate a Safe Password
@@ -147,7 +147,7 @@ Based on your error, run this on your VPS:
 cat .env | grep DATABASE_URL
 
 # The format should be:
-# postgresql://portfolio_user:xxxxx@db:5432/portfolio_prod
+# postgresql://frontuser:xxxxx@db:5432/portfolio_prod
 #              ^^^^^^^^^^^^^^ This MUST match POSTGRES_USER
 
 # Check POSTGRES_USER
@@ -167,7 +167,7 @@ DATABASE_URL=postgresql://portfolio:password@db:5432/portfolio_prod
 
 But it should be:
 ```env
-DATABASE_URL=postgresql://portfolio_user:password@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:password@db:5432/portfolio_prod
                           ^^^^^^^^^^^^^^
 ```
 

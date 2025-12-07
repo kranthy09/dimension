@@ -47,9 +47,9 @@ Edit `.env` and fill in your values:
 ```env
 DOMAIN=yourdomain.com
 POSTGRES_DB=portfolio_prod
-POSTGRES_USER=portfolio_user
+POSTGRES_USER=frontuser
 POSTGRES_PASSWORD=<YOUR_GENERATED_PASSWORD>
-DATABASE_URL=postgresql://portfolio_user:<YOUR_GENERATED_PASSWORD>@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:<YOUR_GENERATED_PASSWORD>@db:5432/portfolio_prod
 SECRET_KEY=<YOUR_GENERATED_SECRET_KEY>
 ```
 
@@ -276,7 +276,7 @@ mkdir -p $BACKUP_DIR
 
 # Backup database
 docker compose -f /home/portfolio/dimension/docker compose.prod.yml exec -T db \
-  pg_dump -U portfolio_user portfolio_prod > $BACKUP_DIR/db_$DATE.sql
+  pg_dump -U frontuser portfolio_prod > $BACKUP_DIR/db_$DATE.sql
 
 # Backup media files
 tar -czf $BACKUP_DIR/media_$DATE.tar.gz /home/portfolio/dimension/backend/media
@@ -449,10 +449,10 @@ docker compose -f docker compose.prod.yml up --build -d
 
 ```bash
 # Check database status
-docker compose -f docker compose.prod.yml exec db pg_isready -U portfolio_user
+docker compose -f docker compose.prod.yml exec db pg_isready -U frontuser
 
 # Access database
-docker compose -f docker compose.prod.yml exec db psql -U portfolio_user portfolio_prod
+docker compose -f docker compose.prod.yml exec db psql -U frontuser portfolio_prod
 
 # Run migrations manually
 docker compose -f docker compose.prod.yml exec backend alembic upgrade head

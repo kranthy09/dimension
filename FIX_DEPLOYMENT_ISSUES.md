@@ -14,7 +14,7 @@ nano .env
 
 Make sure DATABASE_URL follows this EXACT format:
 ```env
-DATABASE_URL=postgresql://portfolio_user:YOUR_PASSWORD@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:YOUR_PASSWORD@db:5432/portfolio_prod
 ```
 
 **Important**:
@@ -28,15 +28,15 @@ DATABASE_URL=postgresql://portfolio_user:YOUR_PASSWORD@db:5432/portfolio_prod
 **Correct Examples**:
 ```env
 # Password: mySecurePass123
-DATABASE_URL=postgresql://portfolio_user:mySecurePass123@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:mySecurePass123@db:5432/portfolio_prod
 
 # Password: my@pass#123
-DATABASE_URL=postgresql://portfolio_user:my%40pass%23123@db:5432/portfolio_prod
+DATABASE_URL=postgresql://frontuser:my%40pass%23123@db:5432/portfolio_prod
 ```
 
 ## Issue 2: Database Not Initialized ❌
 
-**Error**: `database "portfolio_user" does not exist`
+**Error**: `database "frontuser" does not exist`
 
 **Cause**: Database migrations haven't been run yet
 

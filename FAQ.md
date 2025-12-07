@@ -411,13 +411,13 @@ docker compose -f docker compose.prod.yml restart nginx
 docker compose -f docker compose.prod.yml ps
 
 # Check database health
-docker compose -f docker compose.prod.yml exec db pg_isready -U portfolio_user
+docker compose -f docker compose.prod.yml exec db pg_isready -U frontuser
 
 # Verify .env credentials
 cat .env | grep POSTGRES
 
 # Access database console
-docker compose -f docker compose.prod.yml exec db psql -U portfolio_user portfolio_prod
+docker compose -f docker compose.prod.yml exec db psql -U frontuser portfolio_prod
 ```
 
 ---

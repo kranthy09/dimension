@@ -208,7 +208,7 @@ docker compose -f docker compose.prod.yml up --build -d
 ### Backup Database
 ```bash
 docker compose -f docker compose.prod.yml exec -T db \
-  pg_dump -U portfolio_user portfolio_prod > backup.sql
+  pg_dump -U frontuser portfolio_prod > backup.sql
 ```
 
 ## Security Checklist 🔒
@@ -266,7 +266,7 @@ If deployment fails:
    ```bash
    docker compose -f docker compose.prod.yml up -d db
    docker compose -f docker compose.prod.yml exec -T db \
-     psql -U portfolio_user portfolio_prod < backup.sql
+     psql -U frontuser portfolio_prod < backup.sql
    ```
 
 3. Restart all services:
