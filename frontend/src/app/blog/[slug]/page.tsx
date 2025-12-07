@@ -8,6 +8,8 @@ interface Props {
   params: { slug: string }
 }
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
 export const revalidate = 60
 
 export default async function BlogPost({ params }: Props) {

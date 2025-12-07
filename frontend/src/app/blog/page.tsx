@@ -2,6 +2,8 @@ import { api } from '@/lib/api'
 import { Container } from '@/components/layout/Container'
 import { ContentCard } from '@/components/content/ContentCard'
 
+// Force dynamic rendering - don't pre-render at build time
+export const dynamic = 'force-dynamic'
 export const revalidate = 60
 
 export default async function BlogPage() {
