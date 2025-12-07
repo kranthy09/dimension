@@ -43,6 +43,7 @@ cp .env.production.example .env
 ```
 
 Edit `.env` and fill in your values:
+
 ```env
 DOMAIN=yourdomain.com
 POSTGRES_DB=portfolio_prod
@@ -59,22 +60,26 @@ SECRET_KEY=<YOUR_GENERATED_SECRET_KEY>
 ### Step 1: Choose and Purchase VPS Plan
 
 **Recommended Plans:**
+
 - **VPS 1**: 2 CPU, 4GB RAM, 50GB SSD (~$5-6/month) - Minimum
 - **VPS 2**: 4 CPU, 8GB RAM, 100GB SSD (~$8-12/month) - Recommended
 
 ### Step 2: Initial Server Setup
 
 SSH into your VPS:
+
 ```bash
 ssh root@YOUR_VPS_IP
 ```
 
 Update the system:
+
 ```bash
 apt update && apt upgrade -y
 ```
 
 Create a non-root user (recommended):
+
 ```bash
 adduser portfolio
 usermod -aG sudo portfolio
@@ -92,11 +97,11 @@ sudo sh get-docker.sh
 sudo usermod -aG docker $USER
 
 # Install Docker Compose
-sudo apt install docker-compose -y
+sudo apt install docker compose -y
 
 # Verify installations
 docker --version
-docker-compose --version
+docker compose --version
 ```
 
 ### Step 4: Install Additional Tools
@@ -259,6 +264,7 @@ sudo nano /root/backup.sh
 ```
 
 Paste this content:
+
 ```bash
 #!/bin/bash
 
@@ -297,6 +303,7 @@ sudo crontab -e
 ```
 
 Add this line to run daily at 2 AM:
+
 ```
 0 2 * * * /root/backup.sh >> /var/log/portfolio-backup.log 2>&1
 ```
@@ -318,11 +325,13 @@ sudo crontab -e
 ```
 
 Add this line to renew certificates monthly:
+
 ```
 0 0 1 * * certbot renew --quiet && cp /etc/letsencrypt/live/yourdomain.com/*.pem /home/portfolio/dimension/nginx/ssl/ && cd /home/portfolio/dimension && docker-compose -f docker-compose.prod.yml restart nginx
 ```
 
 Test renewal (dry run):
+
 ```bash
 sudo certbot renew --dry-run
 ```
@@ -384,6 +393,7 @@ docker-compose -f docker-compose.prod.yml logs -f
 ### Enable Docker Log Rotation
 
 Edit `/etc/docker/daemon.json`:
+
 ```json
 {
   "log-driver": "json-file",
@@ -395,6 +405,7 @@ Edit `/etc/docker/daemon.json`:
 ```
 
 Restart Docker:
+
 ```bash
 sudo systemctl restart docker
 ```
@@ -476,6 +487,7 @@ docker-compose -f docker-compose.prod.yml up --build -d frontend
 ## Security Best Practices
 
 ✅ **Implemented:**
+
 - HTTPS/TLS encryption
 - Strong passwords and secret keys
 - JWT authentication
@@ -487,6 +499,7 @@ docker-compose -f docker-compose.prod.yml up --build -d frontend
 - CORS configuration
 
 🔒 **Additional Recommendations:**
+
 1. Regularly update system packages: `sudo apt update && sudo apt upgrade`
 2. Monitor failed login attempts
 3. Use SSH keys instead of passwords
@@ -499,36 +512,43 @@ docker-compose -f docker-compose.prod.yml up --build -d frontend
 ## Quick Reference Commands
 
 ### Start Services
+
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ### Stop Services
+
 ```bash
 docker-compose -f docker-compose.prod.yml down
 ```
 
 ### View Logs
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs -f
 ```
 
 ### Restart All
+
 ```bash
 docker-compose -f docker-compose.prod.yml restart
 ```
 
 ### Check Status
+
 ```bash
 docker-compose -f docker-compose.prod.yml ps
 ```
 
 ### Backup Now
+
 ```bash
 sudo /root/backup.sh
 ```
 
 ### Update Application
+
 ```bash
 git pull && docker-compose -f docker-compose.prod.yml up --build -d
 ```
@@ -537,31 +557,34 @@ git pull && docker-compose -f docker-compose.prod.yml up --build -d
 
 ## Cost Breakdown (Hostinger)
 
-| Item | Cost | Notes |
-|------|------|-------|
-| VPS 2 Hosting | $8-12/month | 4 CPU, 8GB RAM |
-| Domain Name | $10-15/year | .com domain |
-| SSL Certificate | Free | Let's Encrypt |
-| **Monthly Total** | **$8-12** | |
-| **Yearly Total** | **$96-144** | + domain fee |
+| Item              | Cost        | Notes          |
+| ----------------- | ----------- | -------------- |
+| VPS 2 Hosting     | $8-12/month | 4 CPU, 8GB RAM |
+| Domain Name       | $10-15/year | .com domain    |
+| SSL Certificate   | Free        | Let's Encrypt  |
+| **Monthly Total** | **$8-12**   |                |
+| **Yearly Total**  | **$96-144** | + domain fee   |
 
 ---
 
 ## Support and Help
 
 ### Useful Resources
+
 - [Docker Documentation](https://docs.docker.com/)
 - [Next.js Deployment](https://nextjs.org/docs/deployment)
 - [FastAPI Deployment](https://fastapi.tiangolo.com/deployment/)
 - [Let's Encrypt Certbot](https://certbot.eff.org/)
 
 ### Logs Locations
+
 - Application logs: `docker-compose logs`
 - Nginx logs: Inside container `/var/log/nginx/`
 - Backup logs: `/var/log/portfolio-backup.log`
 - System logs: `/var/log/syslog`
 
 ### Health Checks
+
 - Backend: `https://yourdomain.com/health`
 - Frontend: `https://yourdomain.com`
 - API Docs: `https://yourdomain.com/docs`
