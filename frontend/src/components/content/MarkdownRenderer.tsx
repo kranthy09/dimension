@@ -36,8 +36,9 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          code({ node, inline, className, children, ...props }) {
+          code({ node, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '')
+            const inline = !match
             return !inline && match ? (
               <SyntaxHighlighter
                 style={isDark ? oneDark : oneLight}
@@ -49,7 +50,7 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
               </SyntaxHighlighter>
             ) : (
               <code
-                className={`px-1.5 py-0.5 rounded text-sm font-mono ${className}`}
+                className={`px-1.5 py-0.5 rounded text-sm font-mono ${className || ''}`}
                 style={{
                   backgroundColor: 'var(--sand-200)',
                   color: 'var(--energy-700)'
