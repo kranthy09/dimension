@@ -1,13 +1,27 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import { Container } from '@/components/layout/Container'
 import { ContentCard } from '@/components/content/ContentCard'
 
-// Force dynamic rendering - don't pre-render at build time
-export const dynamic = 'force-dynamic'
-export const revalidate = 60
+export default function ProjectsPage() {
+  const [projects, setProjects] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-export default async function ProjectsPage() {
-  const projects = await api.content.list('project')
+  useEffect(() => {
+    async function fetchProjects() {
+      try {
+        const data = await api.content.list('project')
+        setProjects(data)
+      } catch (error) {
+        console.error('Failed to fetch projects:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProjects()
+  }, [])
 
   return (
     <main className="pt-24">
@@ -33,7 +47,11 @@ export default async function ProjectsPage() {
         </div>
 
         {/* Projects Grid */}
-        {projects.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <p style={{ color: 'var(--text-muted)' }}>Loading projects...</p>
+          </div>
+        ) : projects.length > 0 ? (
           <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
             {projects.map((project) => (
               <ContentCard key={project.id} content={project} basePath="/projects" />

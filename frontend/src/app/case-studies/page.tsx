@@ -1,13 +1,27 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import { Container } from '@/components/layout/Container'
 import { ContentCard } from '@/components/content/ContentCard'
 
-// Force dynamic rendering - don't pre-render at build time
-export const dynamic = 'force-dynamic'
-export const revalidate = 60
+export default function CaseStudiesPage() {
+  const [caseStudies, setCaseStudies] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-export default async function CaseStudiesPage() {
-  const caseStudies = await api.content.list('case-study')
+  useEffect(() => {
+    async function fetchCaseStudies() {
+      try {
+        const data = await api.content.list('case-study')
+        setCaseStudies(data)
+      } catch (error) {
+        console.error('Failed to fetch case studies:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchCaseStudies()
+  }, [])
 
   return (
     <main className="pt-24">
@@ -33,7 +47,11 @@ export default async function CaseStudiesPage() {
         </div>
 
         {/* Case Studies Grid */}
-        {caseStudies.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-20">
+            <p style={{ color: 'var(--text-muted)' }}>Loading case studies...</p>
+          </div>
+        ) : caseStudies.length > 0 ? (
           <div className="grid gap-8 max-w-4xl mx-auto">
             {caseStudies.map((caseStudy) => (
               <ContentCard key={caseStudy.id} content={caseStudy} basePath="/case-studies" />

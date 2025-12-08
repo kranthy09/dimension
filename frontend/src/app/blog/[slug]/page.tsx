@@ -1,40 +1,70 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 import { Container } from '@/components/layout/Container'
 import { MarkdownRenderer } from '@/components/content/MarkdownRenderer'
 import { ContentHeader } from '@/components/content/ContentHeader'
-import { notFound } from 'next/navigation'
 
-interface Props {
-  params: { slug: string }
-}
+export default function BlogPost() {
+  const params = useParams()
+  const router = useRouter()
+  const slug = params.slug as string
 
-// Force dynamic rendering - don't pre-render at build time
-export const dynamic = 'force-dynamic'
-export const revalidate = 60
+  const [content, setContent] = useState<any>(null)
+  const [markdown, setMarkdown] = useState<string>('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-export default async function BlogPost({ params }: Props) {
-  try {
-    const content = await api.content.get('blog', params.slug)
-    const markdown = await api.content.getMarkdown('blog', params.slug)
+  useEffect(() => {
+    async function fetchContent() {
+      try {
+        const [contentData, markdownData] = await Promise.all([
+          api.content.get('blog', slug),
+          api.content.getMarkdown('blog', slug)
+        ])
+        setContent(contentData)
+        setMarkdown(markdownData)
+      } catch (err) {
+        console.error('Failed to fetch blog post:', err)
+        setError(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchContent()
+  }, [slug])
 
-    const { title, summary, category, tags, readTime } = content.metajson
-
+  if (loading) {
     return (
       <Container className="max-w-4xl py-16">
-        <ContentHeader
-          title={title}
-          summary={summary}
-          category={category}
-          tags={tags}
-          readTime={readTime}
-          publishedAt={content.published_at || undefined}
-        />
-
-        <MarkdownRenderer content={markdown} />
+        <div className="text-center py-20">
+          <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+        </div>
       </Container>
     )
-  } catch (error) {
-    console.log("error: ", error)
-    notFound()
   }
+
+  if (error || !content) {
+    router.push('/404')
+    return null
+  }
+
+  const { title, summary, category, tags, readTime } = content.metajson
+
+  return (
+    <Container className="max-w-4xl py-16">
+      <ContentHeader
+        title={title}
+        summary={summary}
+        category={category}
+        tags={tags}
+        readTime={readTime}
+        publishedAt={content.published_at || undefined}
+      />
+
+      <MarkdownRenderer content={markdown} />
+    </Container>
+  )
 }
