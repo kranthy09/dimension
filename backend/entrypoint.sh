@@ -10,9 +10,19 @@ python3 << END
 import time
 import psycopg2
 import os
+import sys
 
 max_retries = 30
 retry_count = 0
+
+# Print connection details for debugging (hide password)
+print("=" * 60)
+print("DATABASE CONNECTION DETAILS:")
+print(f"  Host: {os.environ.get('POSTGRES_HOST', 'db')}")
+print(f"  Database: {os.environ.get('POSTGRES_DB', 'NOT SET')}")
+print(f"  User: {os.environ.get('POSTGRES_USER', 'NOT SET')}")
+print(f"  Password: {'*' * len(os.environ.get('POSTGRES_PASSWORD', ''))}")
+print("=" * 60)
 
 while retry_count < max_retries:
     try:
@@ -23,15 +33,30 @@ while retry_count < max_retries:
             password=os.environ["POSTGRES_PASSWORD"]
         )
         conn.close()
-        print("Postgres is ready!")
+        print("✓ Postgres is ready!")
         break
-    except psycopg2.OperationalError:
+    except psycopg2.OperationalError as e:
         retry_count += 1
-        print(f"Postgres is unavailable - sleeping (attempt {retry_count}/{max_retries})")
+        print(f"✗ Connection failed (attempt {retry_count}/{max_retries})")
+        print(f"  Error: {e}")
+        print(f"  Error code: {e.pgcode if hasattr(e, 'pgcode') else 'N/A'}")
+
+        # Show detailed error on first attempt and every 10th attempt
+        if retry_count == 1 or retry_count % 10 == 0:
+            print("  Full error details:")
+            print(f"    {type(e).__name__}: {str(e)}")
+
         time.sleep(1)
 else:
-    print("Failed to connect to database after 30 attempts")
-    exit(1)
+    print("=" * 60)
+    print("FATAL: Failed to connect to database after 30 attempts")
+    print("=" * 60)
+    print("Environment variables:")
+    print(f"  POSTGRES_DB = {os.environ.get('POSTGRES_DB', 'NOT SET')}")
+    print(f"  POSTGRES_USER = {os.environ.get('POSTGRES_USER', 'NOT SET')}")
+    print(f"  DATABASE_URL = {os.environ.get('DATABASE_URL', 'NOT SET')[:50]}...")
+    print("=" * 60)
+    sys.exit(1)
 END
 
 echo "Running database migrations..."
