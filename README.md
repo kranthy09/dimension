@@ -88,7 +88,18 @@ Copy all code from the artifacts:
 2. `frontend-portfolio.md` → Frontend files
 3. Copy `docker-compose.yml` from deployment guide
 
-### Step 3: Start Services
+### Step 3: Setup Environment Variables
+
+```bash
+# For LOCAL development - copy the local example
+cp .env.local.example .env
+
+# For PRODUCTION - copy the production example
+cp .env.production.example .env
+# Then edit .env with your actual values
+```
+
+### Step 4: Start Services
 
 ```bash
 # Start everything
@@ -96,6 +107,12 @@ docker compose up -d
 
 # Run migrations
 docker compose exec backend alembic upgrade head
+
+# Create admin user
+docker compose exec backend python3 scripts/create_admin.py \
+  --email admin@local.dev \
+  --password admin123 \
+  --name "Admin"
 
 # Check services
 docker compose ps

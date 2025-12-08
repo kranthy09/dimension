@@ -44,6 +44,7 @@ frontend/next-env.d.ts
 
 # Keep template files
 !.env.production.example
+!.env.local.example
 
 # Database
 *.db
