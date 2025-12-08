@@ -51,6 +51,8 @@ services:
       dockerfile: Dockerfile.prod
       args:
         - NEXT_PUBLIC_API_URL=https://${DOMAIN}/api/v1
+    environment:
+      - NEXT_PUBLIC_API_URL=https://${DOMAIN}/api/v1
     restart: unless-stopped
     networks:
       - app-network
