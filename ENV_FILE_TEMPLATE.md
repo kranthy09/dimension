@@ -22,6 +22,7 @@ NEXT_PUBLIC_API_URL=https://evolune.dev
 ## 🔴 Common Mistakes to Avoid
 
 ### ❌ WRONG - Username mismatch:
+
 ```env
 POSTGRES_USER=frontuser
 DATABASE_URL=postgresql://portfolio:password@db:5432/portfolio_prod
@@ -29,6 +30,7 @@ DATABASE_URL=postgresql://portfolio:password@db:5432/portfolio_prod
 ```
 
 ### ❌ WRONG - Special characters not encoded:
+
 ```env
 # If your password is: my@pass#123
 DATABASE_URL=postgresql://frontuser:my@pass#123@db:5432/portfolio_prod
@@ -36,6 +38,7 @@ DATABASE_URL=postgresql://frontuser:my@pass#123@db:5432/portfolio_prod
 ```
 
 ### ✅ CORRECT - Special characters encoded:
+
 ```env
 # Password: my@pass#123
 DATABASE_URL=postgresql://frontuser:my%40pass%23123@db:5432/portfolio_prod
@@ -47,27 +50,29 @@ DATABASE_URL=postgresql://frontuser:my%40pass%23123@db:5432/portfolio_prod
 
 If your password contains special characters, encode them:
 
-| Character | Encoded | Example Password | Encoded in URL |
-|-----------|---------|------------------|----------------|
-| `@` | `%40` | `pass@word` | `pass%40word` |
-| `#` | `%23` | `pass#word` | `pass%23word` |
-| `$` | `%24` | `pass$word` | `pass%24word` |
-| `%` | `%25` | `pass%word` | `pass%25word` |
-| `/` | `%2F` | `pass/word` | `pass%2Fword` |
-| `?` | `%3F` | `pass?word` | `pass%3Fword` |
-| `&` | `%26` | `pass&word` | `pass%26word` |
-| `=` | `%3D` | `pass=word` | `pass%3Dword` |
-| `+` | `%2B` | `pass+word` | `pass%2Bword` |
-| ` ` (space) | `%20` | `pass word` | `pass%20word` |
+| Character   | Encoded | Example Password | Encoded in URL |
+| ----------- | ------- | ---------------- | -------------- |
+| `@`         | `%40`   | `pass@word`      | `pass%40word`  |
+| `#`         | `%23`   | `pass#word`      | `pass%23word`  |
+| `$`         | `%24`   | `pass$word`      | `pass%24word`  |
+| `%`         | `%25`   | `pass%word`      | `pass%25word`  |
+| `/`         | `%2F`   | `pass/word`      | `pass%2Fword`  |
+| `?`         | `%3F`   | `pass?word`      | `pass%3Fword`  |
+| `&`         | `%26`   | `pass&word`      | `pass%26word`  |
+| `=`         | `%3D`   | `pass=word`      | `pass%3Dword`  |
+| `+`         | `%2B`   | `pass+word`      | `pass%2Bword`  |
+| ` ` (space) | `%20`   | `pass word`      | `pass%20word`  |
 
 ## 🔧 Step-by-Step Fix
 
 ### Step 1: Check your current .env
+
 ```bash
 cat .env
 ```
 
 ### Step 2: Edit .env
+
 ```bash
 nano .env
 ```
@@ -99,12 +104,14 @@ ENVIRONMENT=production
 ```
 
 ### Step 5: Restart services
+
 ```bash
 docker compose -f docker-compose.prod.yml down
 docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### Step 6: Check logs
+
 ```bash
 # Wait 10 seconds for startup
 sleep 10
@@ -116,6 +123,7 @@ docker compose -f docker-compose.prod.yml logs backend | grep -i "ready\|postgre
 ## 🎯 Quick Verification
 
 Run this to check your configuration:
+
 ```bash
 # Show your current DATABASE_URL (passwords will be visible!)
 cat .env | grep DATABASE_URL
@@ -161,11 +169,13 @@ cat .env | grep POSTGRES_USER
 Your error says: `password authentication failed for user "portfolio"`
 
 This means your DATABASE_URL looks like:
+
 ```env
 DATABASE_URL=postgresql://portfolio:password@db:5432/portfolio_prod
 ```
 
 But it should be:
+
 ```env
 DATABASE_URL=postgresql://frontuser:password@db:5432/portfolio_prod
                           ^^^^^^^^^^^^^^
