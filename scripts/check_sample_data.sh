@@ -46,8 +46,8 @@ db.close()
 PYEOF
 
 # Copy to container and run
-docker cp /tmp/check_data.py dimension-backend-1:/tmp/check_data.py
-docker-compose exec -T backend sh -c "cd /app && python /tmp/check_data.py"
+docker cp /tmp/check_data.py dimension-backend-1:/app/check_data.py
+docker-compose exec -T backend sh -c "cd /app && python check_data.py"
 
 # Cleanup
 rm /tmp/check_data.py
