@@ -8,16 +8,23 @@ import os
 import sys
 from datetime import datetime
 
-# Add backend to path
-sys.path.insert(
-    0, os.path.join(os.path.dirname(__file__), '..', 'backend')
-)
+# Add backend to path FIRST
+# In Docker: /app is the backend root
+# On host: ../backend is the backend root
+script_dir = os.path.dirname(os.path.abspath(__file__))
+backend_path = os.path.join(script_dir, '..', 'backend')
+if not os.path.exists(backend_path):
+    # Running in Docker, /app is already the backend
+    backend_path = '/app'
+sys.path.insert(0, backend_path)
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.models.content_file import ContentFile
-from app.database import Base
+# Now import app modules
 import uuid
+from app.database import Base
+from app.models.content_file import ContentFile
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+
 
 # Database connection
 DATABASE_URL = os.getenv(
@@ -381,7 +388,7 @@ def populate_data():
 
         db.commit()
         print("\n✅ Sample data populated successfully!")
-        print(f"\nTotal items created:")
+        print("\nTotal items created:")
         print(f"  - Blog posts: {len(BLOG_POSTS)}")
         print(f"  - Projects: {len(PROJECTS)}")
         print(f"  - Case studies: {len(CASE_STUDIES)}")

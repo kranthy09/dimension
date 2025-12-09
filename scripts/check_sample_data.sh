@@ -10,8 +10,8 @@ if ! docker-compose ps | grep -q "Up"; then
     exit 1
 fi
 
-# Query database for content
-docker-compose exec -T backend python -c "
+# Create a temporary Python script
+cat > /tmp/check_data.py << 'PYEOF'
 from app.database import SessionLocal
 from app.models.content_file import ContentFile
 
@@ -43,7 +43,14 @@ else:
     print('Run ./scripts/populate_local.sh to add sample data')
 
 db.close()
-"
+PYEOF
+
+# Copy to container and run
+docker cp /tmp/check_data.py dimension-backend-1:/tmp/check_data.py
+docker-compose exec -T backend sh -c "cd /app && python /tmp/check_data.py"
+
+# Cleanup
+rm /tmp/check_data.py
 
 echo ""
 echo "✅ Check complete"

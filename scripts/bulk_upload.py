@@ -14,29 +14,31 @@ from pathlib import Path
 
 API_BASE = "http://localhost:8000/api/v1"
 
+
 def upload_file(filepath: Path, section: str):
     """Upload a single markdown file."""
     url = f"{API_BASE}/content/upload"
     params = {"section": section}
 
     try:
-        with open(filepath, 'rb') as f:
-            files = {'file': (filepath.name, f, 'text/markdown')}
+        with open(filepath, "rb") as f:
+            files = {"file": (filepath.name, f, "text/markdown")}
             response = requests.post(url, params=params, files=files)
 
         if response.status_code == 201:
             data = response.json()
-            title = data.get('metadata', {}).get('title', filepath.name)
+            title = data.get("metadata", {}).get("title", filepath.name)
             print(f"✓ Uploaded: {title}")
             return True
         else:
-            error = response.json().get('detail', 'Unknown error')
+            error = response.json().get("detail", "Unknown error")
             print(f"✗ Failed: {filepath.name} - {error}")
             return False
 
     except Exception as e:
         print(f"✗ Error uploading {filepath.name}: {str(e)}")
         return False
+
 
 def bulk_upload(directory: str, section: str):
     """Upload all markdown files in a directory."""
@@ -69,6 +71,7 @@ def bulk_upload(directory: str, section: str):
             fail_count += 1
 
     print(f"\nResults: {success_count} succeeded, {fail_count} failed")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:

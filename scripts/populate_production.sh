@@ -29,7 +29,7 @@ echo "✅ Backup created successfully"
 
 # Run population script
 echo "📝 Populating data..."
-docker-compose exec -T backend python /app/scripts/populate_sample_data.py
+docker-compose exec -T backend sh -c "cd /app && python scripts/populate_sample_data.py"
 
 echo ""
 echo "✅ Done! Sample data has been populated in production"

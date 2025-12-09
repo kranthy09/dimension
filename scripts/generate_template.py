@@ -10,7 +10,6 @@ Usage:
 
 import sys
 from pathlib import Path
-from datetime import datetime
 
 TEMPLATES = {
     "blog": """---
@@ -105,8 +104,9 @@ Metrics and outcomes...
 ## Lessons Learned
 
 Key takeaways...
-"""
+""",
 }
+
 
 def generate_template(section: str, slug: str, title: str):
     """Generate a markdown template file."""
@@ -127,14 +127,22 @@ def generate_template(section: str, slug: str, title: str):
 
     filepath.write_text(content)
     print(f"✓ Created {filename}")
-    print(f"\nNext steps:")
+    print("\nNext steps:")
     print(f"1. Edit {filename} in your favorite editor")
-    print(f"2. Upload: curl -X POST 'http://localhost:8000/api/v1/content/upload?section={section}' -F 'file=@{filename}'")
+    print(
+        f"2. Upload: curl \
+            -X POST \
+            'http://localhost:8000/api/v1/content/upload?section={section}' \
+            -F 'file=@{filename}'"
+    )
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("Usage: python generate_template.py <section> <slug> <title>")
-        print("Example: python generate_template.py blog my-post 'My Post Title'")
+        print(
+            "Example: python generate_template.py blog my-post 'My Post Title'"
+        )
         sys.exit(1)
 
     section = sys.argv[1]

@@ -17,6 +17,7 @@ REQUIRED_FIELDS = {
     "case-study": ["slug", "title", "summary", "category"]
 }
 
+
 def validate_file(filepath: Path, section: str) -> bool:
     """Validate a single markdown file."""
     try:
@@ -43,6 +44,7 @@ def validate_file(filepath: Path, section: str) -> bool:
         print(f"✗ {filepath.name}: Error - {str(e)}")
         return False
 
+
 def validate_directory(path: Path, section: str):
     """Validate all markdown files in a directory."""
     md_files = list(path.glob("*.md"))
@@ -67,9 +69,13 @@ def validate_directory(path: Path, section: str):
     if invalid_count == 0:
         print("✓ All files are valid and ready to upload!")
 
+
 def main():
     if len(sys.argv) != 3:
-        print("Usage: python validate_frontmatter.py <file_or_directory> <section>")
+        print(
+            "Usage: python validate_frontmatter.py \
+            <file_or_directory> <section>"
+        )
         print("Example: python validate_frontmatter.py ./content/blog blog")
         sys.exit(1)
 
@@ -98,6 +104,7 @@ def main():
     else:
         print(f"Error: '{target}' is not a file or directory")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

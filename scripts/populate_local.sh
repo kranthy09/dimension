@@ -26,7 +26,7 @@ done
 
 # Run population script
 echo "📝 Running population script..."
-docker-compose exec -T backend python /app/scripts/populate_sample_data.py
+docker-compose exec -T backend sh -c "cd /app && python scripts/populate_sample_data.py"
 
 echo ""
 echo "✅ Done! Visit http://localhost:3000 to see the sample data"
