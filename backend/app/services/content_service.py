@@ -30,7 +30,11 @@ class ContentService:
 
         # Read and parse file
         content = await file.read()
-        metajson, markdown_content = self.parser.parse(content)
+        try:
+            metajson, markdown_content = self.parser.parse(content)
+        except ValueError as e:
+            # Parser raises ValueError with helpful messages for YAML errors
+            raise HTTPException(400, str(e))
 
         # Validate metajson
         try:
