@@ -9,7 +9,9 @@ import sys
 from datetime import datetime
 
 # Add backend to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
+sys.path.insert(
+    0, os.path.join(os.path.dirname(__file__), '..', 'backend')
+)
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -18,26 +20,39 @@ from app.database import Base
 import uuid
 
 # Database connection
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://frontuser:frontpass@db:5432/portfolio')
+DATABASE_URL = os.getenv(
+    'DATABASE_URL',
+    'postgresql://frontuser:frontpass@db:5432/portfolio'
+)
 engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
 # Sample data templates
 BLOG_POSTS = [
     {
         "slug": "mastering-python-async",
         "title": "Mastering Python Async/Await: A Deep Dive",
-        "summary": "Explore the intricacies of asynchronous programming in Python, from basic concepts to advanced patterns.",
+        "summary": (
+            "Explore the intricacies of asynchronous programming in "
+            "Python, from basic concepts to advanced patterns."
+        ),
         "category": "Python",
         "tags": ["Python", "Async", "Programming", "Tutorial"],
         "readTime": "12 min",
         "content": """# Mastering Python Async/Await
 
-Asynchronous programming has become essential in modern Python development. Let's explore how to leverage async/await effectively.
+Asynchronous programming has become essential in modern Python \
+development. Let's explore how to leverage async/await effectively.
 
 ## Understanding the Event Loop
 
-The event loop is the heart of async programming. It manages the execution of asynchronous tasks, allowing your program to handle multiple operations concurrently without blocking.
+The event loop is the heart of async programming. It manages the \
+execution of asynchronous tasks, allowing your program to handle \
+multiple operations concurrently without blocking.
 
 ## Common Patterns
 
@@ -67,7 +82,9 @@ The event loop is the heart of async programming. It manages the execution of as
 
 ## Conclusion
 
-Mastering async/await opens up new possibilities for building high-performance Python applications that can handle thousands of concurrent connections efficiently.
+Mastering async/await opens up new possibilities for building \
+high-performance Python applications that can handle thousands of \
+concurrent connections efficiently.
 """
     }
 ]
@@ -76,13 +93,23 @@ PROJECTS = [
     {
         "slug": "realtime-chat-app",
         "title": "Real-Time Chat Application",
-        "summary": "A full-stack chat application with WebSocket support, user authentication, and message persistence.",
-        "techStack": ["React", "Node.js", "Socket.io", "MongoDB", "TypeScript"],
+        "summary": (
+            "A full-stack chat application with WebSocket support, "
+            "user authentication, and message persistence."
+        ),
+        "techStack": [
+            "React",
+            "Node.js",
+            "Socket.io",
+            "MongoDB",
+            "TypeScript"
+        ],
         "deployedUrl": "https://chat-demo.example.com",
         "codebaseUrl": "https://github.com/example/chat-app",
         "content": """# Real-Time Chat Application
 
-A modern chat application built with real-time communication capabilities.
+A modern chat application built with real-time communication \
+capabilities.
 
 ## Features
 
@@ -103,7 +130,8 @@ A modern chat application built with real-time communication capabilities.
 
 ## Architecture
 
-The application uses a microservices architecture with separate services for:
+The application uses a microservices architecture with separate \
+services for:
 - Authentication service
 - Messaging service
 - Presence tracking service
@@ -111,7 +139,8 @@ The application uses a microservices architecture with separate services for:
 ## Challenges Solved
 
 - **Scalability**: Implemented Redis pub/sub for horizontal scaling
-- **Message ordering**: Ensured consistent message delivery across clients
+- **Message ordering**: Ensured consistent message delivery across \
+clients
 - **Connection management**: Handled reconnection logic gracefully
 
 ## Screenshots
@@ -134,14 +163,25 @@ CASE_STUDIES = [
     {
         "slug": "e-commerce-performance-optimization",
         "title": "E-Commerce Platform Performance Optimization",
-        "summary": "How we reduced page load times by 70% and increased conversion rates by 25% for a major e-commerce platform.",
+        "summary": (
+            "How we reduced page load times by 70% and increased "
+            "conversion rates by 25% for a major e-commerce platform."
+        ),
         "category": "Performance",
-        "tags": ["Performance", "Optimization", "E-Commerce", "Case Study"],
+        "tags": [
+            "Performance",
+            "Optimization",
+            "E-Commerce",
+            "Case Study"
+        ],
         "content": """# E-Commerce Platform Performance Optimization
 
 ## Executive Summary
 
-A major e-commerce platform was experiencing slow page load times affecting user experience and conversion rates. We implemented comprehensive performance optimizations that resulted in 70% faster load times and 25% increase in conversions.
+A major e-commerce platform was experiencing slow page load times \
+affecting user experience and conversion rates. We implemented \
+comprehensive performance optimizations that resulted in 70% faster \
+load times and 25% increase in conversions.
 
 ## The Challenge
 
@@ -231,7 +271,10 @@ We conducted a comprehensive audit using:
 
 ## Conclusion
 
-Performance optimization is not a one-time effort but an ongoing process. By implementing these optimizations and maintaining vigilance, we helped the client achieve significant improvements in both technical metrics and business outcomes.
+Performance optimization is not a one-time effort but an ongoing \
+process. By implementing these optimizations and maintaining \
+vigilance, we helped the client achieve significant improvements in \
+both technical metrics and business outcomes.
 """
     }
 ]
@@ -239,7 +282,13 @@ Performance optimization is not a one-time effort but an ongoing process. By imp
 
 def create_file_path(section: str, filename: str) -> str:
     """Create full file path for markdown file"""
-    base_path = os.path.join(os.path.dirname(__file__), '..', 'backend', 'media', 'markdown')
+    base_path = os.path.join(
+        os.path.dirname(__file__),
+        '..',
+        'backend',
+        'media',
+        'markdown'
+    )
     section_path = os.path.join(base_path, section)
     os.makedirs(section_path, exist_ok=True)
     return os.path.join(section_path, filename)
