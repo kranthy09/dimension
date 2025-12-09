@@ -14,9 +14,10 @@ export function Footer() {
 
   return (
     <footer
-      className="relative mt-32 border-t"
+      className="relative mt-16 md:mt-24 lg:mt-32 border-t"
       style={{
         borderColor: 'var(--border)',
+        paddingBottom: 'var(--safe-area-bottom)',
       }}
     >
       {/* Gradient accent line */}
@@ -29,44 +30,44 @@ export function Footer() {
       />
 
       <Container>
-        <div className="py-12">
+        <div className="py-8 md:py-12">
           {/* Main content */}
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
             {/* Brand */}
             <div className="text-center md:text-left">
-              <h3 className="text-xl font-bold gradient-text mb-2">Portfolio</h3>
-              <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+              <h3 className="text-lg md:text-xl font-bold gradient-text mb-2">Portfolio</h3>
+              <p style={{ color: 'var(--text-muted)' }} className="text-xs md:text-sm">
                 Building with <span style={{ color: 'var(--energy-500)' }}>energy</span> &amp;{' '}
                 <span style={{ color: 'var(--life-500)' }}>evolution</span>
               </p>
             </div>
 
             {/* Links */}
-            <div className="flex gap-8">
+            <div className="flex flex-wrap justify-center gap-4 md:gap-6 lg:gap-8">
               <a
                 href="/blog"
-                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)]"
+                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)] min-h-[44px] flex items-center"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 Blog
               </a>
               <a
                 href="/projects"
-                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)]"
+                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)] min-h-[44px] flex items-center"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 Projects
               </a>
               <a
                 href="/case-studies"
-                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)]"
+                className="text-sm font-medium transition-colors hover:text-[var(--energy-500)] min-h-[44px] flex items-center"
                 style={{ color: 'var(--text-secondary)' }}
               >
                 Case Studies
               </a>
               <a
                 href="/admin/upload"
-                className="text-sm font-medium transition-colors hover:text-[var(--life-500)]"
+                className="text-sm font-medium transition-colors hover:text-[var(--life-500)] min-h-[44px] flex items-center"
                 style={{ color: 'var(--text-muted)' }}
               >
                 Admin
@@ -75,8 +76,8 @@ export function Footer() {
           </div>
 
           {/* Copyright */}
-          <div className="mt-8 pt-8 border-t text-center" style={{ borderColor: 'var(--border)' }}>
-            <p style={{ color: 'var(--text-muted)' }} className="text-sm">
+          <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t text-center" style={{ borderColor: 'var(--border)' }}>
+            <p style={{ color: 'var(--text-muted)' }} className="text-xs md:text-sm">
               &copy; {currentYear} Portfolio. Crafted with passion and code.
             </p>
           </div>

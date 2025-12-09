@@ -25,13 +25,13 @@ export default function ProjectsPage() {
 
   return (
     <main className="pt-24">
-      <Container className="py-16">
+      <Container className="py-8 sm:py-12 lg:py-16">
         {/* Page Header */}
-        <div className="mb-16 text-center">
+        <div className="mb-8 sm:mb-12 lg:mb-16 text-center">
           <h1
-            className="mb-4"
+            className="mb-3 sm:mb-4"
             style={{
-              fontSize: 'clamp(2.5rem, 5vw, 4rem)',
+              fontSize: 'clamp(2rem, 5vw, 4rem)',
               fontWeight: 800,
               letterSpacing: '-0.02em',
             }}
@@ -39,7 +39,7 @@ export default function ProjectsPage() {
             <span className="gradient-text">Projects</span>
           </h1>
           <p
-            className="text-lg md:text-xl max-w-2xl mx-auto"
+            className="text-base sm:text-lg md:text-xl max-w-2xl mx-auto px-4"
             style={{ color: 'var(--text-secondary)' }}
           >
             Open source contributions and personal projects built with modern tech
@@ -48,11 +48,11 @@ export default function ProjectsPage() {
 
         {/* Projects Grid */}
         {loading ? (
-          <div className="text-center py-20">
+          <div className="text-center py-12 sm:py-16 md:py-20">
             <p style={{ color: 'var(--text-muted)' }}>Loading projects...</p>
           </div>
         ) : projects.length > 0 ? (
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 max-w-6xl mx-auto">
             {projects.map((project) => (
               <ContentCard key={project.id} content={project} basePath="/projects" />
             ))}

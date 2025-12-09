@@ -13,17 +13,17 @@ export function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Animated background orbs */}
+      {/* Animated background orbs - Hidden on mobile for performance */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div
-          className="absolute top-20 left-10 w-72 h-72 rounded-full opacity-20 blur-3xl"
+          className="absolute top-20 left-10 w-48 h-48 sm:w-64 sm:h-64 lg:w-72 lg:h-72 rounded-full opacity-10 sm:opacity-15 lg:opacity-20 blur-2xl lg:blur-3xl"
           style={{
             background: 'var(--gradient-energy)',
             animation: 'float 6s ease-in-out infinite',
           }}
         />
         <div
-          className="absolute bottom-20 right-10 w-96 h-96 rounded-full opacity-20 blur-3xl"
+          className="absolute bottom-20 right-10 w-56 h-56 sm:w-72 sm:h-72 lg:w-96 lg:h-96 rounded-full opacity-10 sm:opacity-15 lg:opacity-20 blur-2xl lg:blur-3xl"
           style={{
             background: 'var(--gradient-life)',
             animation: 'float 8s ease-in-out infinite',
@@ -32,7 +32,7 @@ export function Hero() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
         <div className="max-w-4xl mx-auto text-center">
           {/* Main Heading */}
           <h1
@@ -57,13 +57,13 @@ export function Hero() {
 
           {/* Subtitle */}
           <p
-            className={`mb-12 text-xl md:text-2xl leading-relaxed transition-all duration-1000 delay-200 ${
+            className={`mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg md:text-xl lg:text-2xl leading-relaxed px-4 transition-all duration-1000 delay-200 ${
               mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
             }`}
             style={{
               color: 'var(--text-secondary)',
               maxWidth: '42rem',
-              margin: '0 auto 3rem',
+              margin: '0 auto 2rem',
             }}
           >
             {heroContent.subtitle}
@@ -71,14 +71,14 @@ export function Hero() {
 
           {/* CTA Buttons */}
           <div
-            className={`flex flex-wrap gap-4 justify-center transition-all duration-1000 delay-400 ${
+            className={`flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center px-4 transition-all duration-1000 delay-400 ${
               mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
             }`}
           >
             {heroContent.cta.map((cta, index) => (
               <Link key={cta.link} href={cta.link}>
                 <button
-                  className={`group relative px-6 py-3 rounded-xl font-semibold transition-all duration-300 overflow-hidden ${
+                  className={`group relative w-full sm:w-auto min-h-[48px] px-6 py-3 rounded-xl text-sm sm:text-base font-semibold transition-all duration-300 overflow-hidden ${
                     index === 0
                       ? 'hover:shadow-2xl hover:scale-105'
                       : 'hover:shadow-lg hover:scale-102'
@@ -107,10 +107,10 @@ export function Hero() {
                     />
                   )}
 
-                  <span className="relative z-10 flex items-center gap-2">
+                  <span className="relative z-10 flex items-center justify-center gap-2">
                     {cta.text}
                     <svg
-                      className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1"
+                      className="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 group-hover:translate-x-1"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -130,7 +130,7 @@ export function Hero() {
 
           {/* Scroll indicator */}
           <div
-            className={`mt-20 transition-all duration-1000 delay-600 ${
+            className={`mt-12 sm:mt-16 lg:mt-20 transition-all duration-1000 delay-600 ${
               mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
             }`}
           >
