@@ -289,13 +289,20 @@ both technical metrics and business outcomes.
 
 def create_file_path(section: str, filename: str) -> str:
     """Create full file path for markdown file"""
-    base_path = os.path.join(
-        os.path.dirname(__file__),
-        '..',
-        'backend',
-        'media',
-        'markdown'
-    )
+    # Detect if running in Docker or on host
+    if os.path.exists('/app/media'):
+        # Running in Docker - /app is the backend root
+        base_path = '/app/media/markdown'
+    else:
+        # Running on host - relative to script location
+        base_path = os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'backend',
+            'media',
+            'markdown'
+        )
+
     section_path = os.path.join(base_path, section)
     os.makedirs(section_path, exist_ok=True)
     return os.path.join(section_path, filename)
