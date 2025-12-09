@@ -65,8 +65,8 @@ export function Header() {
           <nav className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link href="/" className="relative group">
-              <span className="text-2xl font-bold gradient-text gradient-text-animated">
-                Portfolio
+              <span className="text-xl font-bold gradient-text gradient-text-animated">
+                Evolune
               </span>
             </Link>
 

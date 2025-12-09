@@ -35,7 +35,18 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
             {/* Brand */}
             <div className="text-center md:text-left">
-              <h3 className="text-lg md:text-xl font-bold gradient-text mb-2">Portfolio</h3>
+              {/* Logo and Evolune text */}
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+                <img
+                  src="/images/evolune_logo.png"
+                  alt="Evolune Logo"
+                  className="h-8 w-auto sm:h-10 md:h-12 object-contain"
+                  style={{
+                    filter: 'drop-shadow(0 2px 8px rgba(255, 107, 53, 0.3))'
+                  }}
+                />
+                <h3 className="text-lg md:text-xl font-bold gradient-text">Evolune</h3>
+              </div>
               <p style={{ color: 'var(--text-muted)' }} className="text-xs md:text-sm">
                 Building with <span style={{ color: 'var(--energy-500)' }}>energy</span> &amp;{' '}
                 <span style={{ color: 'var(--life-500)' }}>evolution</span>
@@ -78,7 +89,7 @@ export function Footer() {
           {/* Copyright */}
           <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t text-center" style={{ borderColor: 'var(--border)' }}>
             <p style={{ color: 'var(--text-muted)' }} className="text-xs md:text-sm">
-              &copy; {currentYear} Portfolio. Crafted with passion and code.
+              &copy; {currentYear} Evolune. Crafted with passion and code.
             </p>
           </div>
         </div>
