@@ -10,6 +10,11 @@ Or with custom values:
         --password yourpassword \
         --name "Admin User"
 """
+from app.config import get_settings
+from app.core.security import get_password_hash
+from app.models.user import User
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 import sys
 import os
 import argparse
@@ -17,11 +22,6 @@ import argparse
 # Add app to path
 sys.path.insert(0, '/app')
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.models.user import User
-from app.core.security import get_password_hash
-from app.config import get_settings
 
 def create_admin_user(email: str, password: str, full_name: str):
     """Create an admin user"""
@@ -67,6 +67,7 @@ def create_admin_user(email: str, password: str, full_name: str):
         return False
     finally:
         session.close()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create an admin user")
