@@ -9,18 +9,34 @@ Or with custom values:
         --email admin@example.com \
         --password yourpassword \
         --name "Admin User"
+In docker terminal:
+        python3 scripts/create_admin.py \
+        --email admin@evolune.com \
+        --password admin123 \
+        --name "Admin User"
 """
+import sys
+import os
+import argparse
+
+# Add backend to path FIRST (before importing app modules)
+# When running in Docker: current directory is /app (backend root)
+# When running on host: need to add backend to path
+if os.path.exists('/app/app'):
+    # Running in Docker - /app is the backend root
+    sys.path.insert(0, '/app')
+else:
+    # Running on host - add backend directory
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_path = os.path.abspath(os.path.join(script_dir, '..'))
+    sys.path.insert(0, backend_path)
+
+# Now import app modules
 from app.config import get_settings
 from app.core.security import get_password_hash
 from app.models.user import User
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-import sys
-import os
-import argparse
-
-# Add app to path
-sys.path.insert(0, '/app')
 
 
 def create_admin_user(email: str, password: str, full_name: str):
