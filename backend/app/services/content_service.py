@@ -32,6 +32,7 @@ class ContentService:
         content = await file.read()
         try:
             metajson, markdown_content = self.parser.parse(content)
+            print("metajson: ", metajson)
         except ValueError as e:
             # Parser raises ValueError with helpful messages for YAML errors
             raise HTTPException(400, str(e))
@@ -50,9 +51,13 @@ class ContentService:
                 400, f"Content with slug '{slug}' already exists"
             )
 
-        # Save file to disk
-        await file.seek(0)  # Reset file pointer
-        file_path = await file_storage.save_file(section, file)
+        # Save only the markdown content (without frontmatter) to disk
+        # The metadata is already stored in metajson in the database
+        file_path = file_storage.save_content(
+            section,
+            file.filename,
+            markdown_content
+        )
 
         # Create database record
         content_file = ContentFile(

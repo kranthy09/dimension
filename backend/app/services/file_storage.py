@@ -38,6 +38,23 @@ class FileStorageService:
         relative_path = file_path.relative_to(settings.MEDIA_ROOT)
         return str(relative_path)
 
+    def save_content(self, section: str, filename: str, content: str) -> str:
+        """
+        Save markdown content directly (without frontmatter)
+
+        Returns:
+            Relative file path (e.g., "markdown/blog/file.md")
+        """
+        section_dir = self.get_section_dir(section)
+        file_path = section_dir / filename
+
+        # Write content (already without frontmatter)
+        file_path.write_text(content, encoding='utf-8')
+
+        # Return relative path from MEDIA_ROOT
+        relative_path = file_path.relative_to(settings.MEDIA_ROOT)
+        return str(relative_path)
+
     def read_file(self, file_path: str) -> str:
         """Read markdown content from disk"""
         # file_path is relative (e.g., "markdown/blog/file.md")
