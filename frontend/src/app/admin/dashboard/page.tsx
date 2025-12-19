@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation'
 import { authService, User } from '@/lib/auth'
 import { api, ContentFile } from '@/lib/api'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
-
 export default function AdminDashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
@@ -70,24 +68,8 @@ export default function AdminDashboardPage() {
     const token = authService.getToken()
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const response = await fetch(
-        `${API_BASE}/content/upload?section=${section}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error('Upload failed')
-      }
-
+      // Use the centralized API client
+      await api.content.upload(section, file, token || undefined)
       await loadContent()
       e.target.value = '' // Reset input
     } catch (error) {
@@ -102,18 +84,13 @@ export default function AdminDashboardPage() {
     if (!confirm('Are you sure you want to delete this content?')) return
 
     const token = authService.getToken()
+    if (token) {
+      api.setToken(token)
+    }
+
     try {
-      const response = await fetch(`${API_BASE}/content/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error('Delete failed')
-      }
-
+      // Use the centralized API client
+      await api.content.delete(id)
       await loadContent()
     } catch (error) {
       console.error('Delete error:', error)
@@ -123,23 +100,16 @@ export default function AdminDashboardPage() {
 
   const handleTogglePublish = async (item: ContentFile) => {
     const token = authService.getToken()
+    if (token) {
+      api.setToken(token)
+    }
+
     try {
-      const response = await fetch(`${API_BASE}/content/${item.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          is_published: !item.is_published,
-          published_at: !item.is_published ? new Date().toISOString() : null,
-        }),
+      // Use the centralized API client
+      await api.content.update(item.id, {
+        is_published: !item.is_published,
+        published_at: !item.is_published ? new Date().toISOString() : null,
       })
-
-      if (!response.ok) {
-        throw new Error('Update failed')
-      }
-
       await loadContent()
     } catch (error) {
       console.error('Update error:', error)

@@ -19,21 +19,40 @@ export interface MarkdownContent {
 
 class ApiClient {
   private baseUrl: string
+  private token: string | null = null
 
   constructor(baseUrl: string = API_BASE) {
     this.baseUrl = baseUrl
+  }
+
+  setToken(token: string | null) {
+    this.token = token
   }
 
   private async request<T>(
     endpoint: string,
     options?: RequestInit
   ): Promise<T> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+
+    // Add auth token if available
+    if (this.token) {
+      headers['Authorization'] = `Bearer ${this.token}`
+    }
+
+    // Merge with any existing headers
+    if (options?.headers) {
+      const existingHeaders = new Headers(options.headers)
+      existingHeaders.forEach((value, key) => {
+        headers[key] = value
+      })
+    }
+
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
+      headers,
       next: { revalidate: 60 }, // Cache for 60 seconds
     })
 
@@ -73,15 +92,25 @@ class ApiClient {
 
     upload: async (
       section: 'blog' | 'project' | 'case-study',
-      file: File
+      file: File,
+      token?: string
     ): Promise<ContentFile> => {
       const formData = new FormData()
       formData.append('file', file)
+
+      const headers: Record<string, string> = {}
+
+      // Use provided token or instance token
+      const authToken = token || this.token
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`
+      }
 
       const response = await fetch(
         `${this.baseUrl}/content/upload?section=${section}`,
         {
           method: 'POST',
+          headers,
           body: formData,
         }
       )

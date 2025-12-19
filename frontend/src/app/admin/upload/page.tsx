@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { authService, User } from '@/lib/auth'
+import { api } from '@/lib/api'
 
 type Section = 'blog' | 'project' | 'case-study'
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 
 export default function UploadPage() {
   const router = useRouter()
@@ -61,26 +60,8 @@ export default function UploadPage() {
     setMessage('')
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const response = await fetch(
-        `${API_BASE}/content/upload?section=${section}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      )
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Upload failed')
-      }
-
-      const result = await response.json()
+      // Use the centralized API client
+      const result = await api.content.upload(section, file, token)
       setMessage(`✅ Uploaded: ${result.metajson.title}`)
       setFile(null)
 
