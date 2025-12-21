@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, Query
 
-from typing import Literal
+from typing import Literal, List
 from uuid import UUID
 
 from app.services.content_service import ContentService, get_content_service
@@ -93,3 +93,14 @@ def delete_content(
     success = service.delete(content_id)
     if not success:
         raise HTTPException(404, "Content not found")
+
+
+@router.post("/{content_id}/images", status_code=201)
+async def upload_images(
+    content_id: UUID,
+    images: List[UploadFile] = File(...),
+    service: ContentService = Depends(get_content_service),
+    _: User = Depends(get_current_admin_user),
+):
+    """Upload images for a content file (Admin only)"""
+    return await service.upload_images(content_id, images)

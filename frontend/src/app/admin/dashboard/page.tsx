@@ -141,6 +141,13 @@ export default function AdminDashboardPage() {
             </div>
             <div className="flex items-center gap-4">
               <a
+                href="/admin/upload"
+                className="text-sm font-medium transition-colors duration-200 hover:text-[var(--energy-600)]"
+                style={{ color: 'var(--energy-500)' }}
+              >
+                Upload Content
+              </a>
+              <a
                 href="/"
                 className="text-sm font-medium transition-colors duration-200 hover:text-[var(--energy-600)]"
                 style={{ color: 'var(--energy-500)' }}

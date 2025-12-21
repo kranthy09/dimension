@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from fastapi import UploadFile, HTTPException, Depends
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
 
@@ -51,12 +51,17 @@ class ContentService:
                 400, f"Content with slug '{slug}' already exists"
             )
 
+        # Get title for folder name
+        title = metajson.get("title", file.filename)
+        folder_name = file_storage.get_blog_folder_name(title)
+
         # Save only the markdown content (without frontmatter) to disk
-        # The metadata is already stored in metajson in the database
+        # Uses new structure: markdown/section/Blog_Name/content.md
         file_path = file_storage.save_content(
             section,
             file.filename,
-            markdown_content
+            markdown_content,
+            folder_name=folder_name
         )
 
         # Create database record
@@ -160,6 +165,55 @@ class ContentService:
             return None
 
         return file_storage.read_file(content.file_path)
+
+    async def upload_images(
+        self, content_id: UUID, images: List[UploadFile]
+    ) -> List[dict]:
+        """
+        Upload images for a content file
+
+        Args:
+            content_id: Content file ID
+            images: List of image files to upload
+
+        Returns:
+            List of uploaded image info with paths
+        """
+        content = self.get_by_id(content_id)
+        if not content:
+            raise HTTPException(404, "Content not found")
+
+        # Get folder name from file path
+        # file_path format: "markdown/blog/Blog_Name/content.md"
+        from pathlib import Path
+        path_parts = Path(content.file_path).parts
+        if len(path_parts) >= 3:
+            folder_name = path_parts[-2]
+        else:
+            # Legacy format, use title to create folder
+            title = content.metajson.get("title", content.filename)
+            folder_name = file_storage.get_blog_folder_name(title)
+
+        uploaded_images = []
+        for image in images:
+            # Validate image file
+            if not image.content_type.startswith("image/"):
+                raise HTTPException(
+                    400, f"File {image.filename} is not an image"
+                )
+
+            # Save image
+            image_path = await file_storage.save_image(
+                content.section, folder_name, image
+            )
+
+            uploaded_images.append({
+                "filename": image.filename,
+                "path": image_path,
+                "relative_path": f"images/{image.filename}",
+            })
+
+        return uploaded_images
 
 
 def get_content_service(db: Session = Depends(get_db)) -> ContentService:

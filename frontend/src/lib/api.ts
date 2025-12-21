@@ -61,6 +61,11 @@ class ApiClient {
       throw new Error(error.detail || `HTTP ${response.status}`)
     }
 
+    // Handle 204 No Content response (no body to parse)
+    if (response.status === 204) {
+      return undefined as T
+    }
+
     return response.json()
   }
 
@@ -137,6 +142,40 @@ class ApiClient {
       return this.request(`/content/${contentId}`, {
         method: 'DELETE',
       })
+    },
+
+    uploadImages: async (
+      contentId: string,
+      images: File[],
+      token?: string
+    ): Promise<Array<{filename: string; path: string; relative_path: string}>> => {
+      const formData = new FormData()
+      images.forEach(image => {
+        formData.append('images', image)
+      })
+
+      const headers: Record<string, string> = {}
+
+      const authToken = token || this.token
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`
+      }
+
+      const response = await fetch(
+        `${this.baseUrl}/content/${contentId}/images`,
+        {
+          method: 'POST',
+          headers,
+          body: formData,
+        }
+      )
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Upload failed' }))
+        throw new Error(error.detail)
+      }
+
+      return response.json()
     },
   }
 }
