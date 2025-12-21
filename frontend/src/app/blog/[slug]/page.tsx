@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
-import { Container } from '@/components/layout/Container'
 import { MarkdownRenderer } from '@/components/content/MarkdownRenderer'
 import { ContentHeader } from '@/components/content/ContentHeader'
+import { TableOfContents } from '@/components/content/TableOfContents'
 
 export default function BlogPost() {
   const params = useParams()
@@ -38,11 +38,11 @@ export default function BlogPost() {
 
   if (loading) {
     return (
-      <Container className="max-w-4xl py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center py-20">
           <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
         </div>
-      </Container>
+      </div>
     )
   }
 
@@ -54,17 +54,31 @@ export default function BlogPost() {
   const { title, summary, category, tags, readTime } = content.metajson
 
   return (
-    <Container className="max-w-4xl py-16">
-      <ContentHeader
-        title={title}
-        summary={summary}
-        category={category}
-        tags={tags}
-        readTime={readTime}
-        publishedAt={content.published_at || undefined}
-      />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* Three Column Layout: Left Space | Content | TOC */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_3fr_1fr] gap-8">
+        {/* Left Empty Space (hidden on mobile) */}
+        <div className="hidden xl:block" />
 
-      <MarkdownRenderer content={markdown} />
-    </Container>
+        {/* Main Content */}
+        <article className="max-w-3xl">
+          <ContentHeader
+            title={title}
+            summary={summary}
+            category={category}
+            tags={tags}
+            readTime={readTime}
+            publishedAt={content.published_at || undefined}
+          />
+
+          <MarkdownRenderer content={markdown} />
+        </article>
+
+        {/* Right Table of Contents (hidden on mobile) */}
+        <aside className="hidden xl:block">
+          <TableOfContents markdown={markdown} />
+        </aside>
+      </div>
+    </div>
   )
 }

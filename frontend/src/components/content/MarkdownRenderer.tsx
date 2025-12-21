@@ -31,6 +31,15 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
     return () => observer.disconnect()
   }, [])
 
+  // Generate heading ID from text
+  const generateId = (text: string): string => {
+    return text
+      .toString()
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+  }
+
   return (
     <div className={`prose prose-neutral dark:prose-invert max-w-none ${className}`}>
       <ReactMarkdown
@@ -61,21 +70,30 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
               </code>
             )
           },
-          h1: ({ children }) => (
-            <h1 className="text-4xl font-bold mt-8 mb-4" style={{ color: 'var(--text-primary)' }}>
-              {children}
-            </h1>
-          ),
-          h2: ({ children }) => (
-            <h2 className="text-3xl font-semibold mt-6 mb-3" style={{ color: 'var(--text-primary)' }}>
-              {children}
-            </h2>
-          ),
-          h3: ({ children }) => (
-            <h3 className="text-2xl font-semibold mt-5 mb-2" style={{ color: 'var(--text-primary)' }}>
-              {children}
-            </h3>
-          ),
+          h1: ({ children }) => {
+            const id = generateId(String(children))
+            return (
+              <h1 id={id} className="text-4xl font-bold mt-8 mb-4 scroll-mt-24" style={{ color: 'var(--text-primary)' }}>
+                {children}
+              </h1>
+            )
+          },
+          h2: ({ children }) => {
+            const id = generateId(String(children))
+            return (
+              <h2 id={id} className="text-3xl font-semibold mt-6 mb-3 scroll-mt-24" style={{ color: 'var(--text-primary)' }}>
+                {children}
+              </h2>
+            )
+          },
+          h3: ({ children }) => {
+            const id = generateId(String(children))
+            return (
+              <h3 id={id} className="text-2xl font-semibold mt-5 mb-2 scroll-mt-24" style={{ color: 'var(--text-primary)' }}>
+                {children}
+              </h3>
+            )
+          },
           h4: ({ children }) => (
             <h4 className="text-xl font-semibold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>
               {children}

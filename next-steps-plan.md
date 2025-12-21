@@ -49,3 +49,12 @@ remaining
 
 - Make in.evolune.dev for initial version of deployment
 - Make evolune.dev for final version of deployment.
+
+[DONE] - Upload content with images
+
+[PlANNING] - Content view improvement.
+Make content section in the middle with right nav containing headings of content section to jump to, or scroll with content.
+
+In blog/[id]/page.tsx or for case-studies or for projects,
+divide the screen width in to three coulmns one for left empty space, middle for content and right for navigation of the content with content's section titles to view.
+In Mobile screens, looks good for current implementation, so do not make changes to mobile device implementaion.
