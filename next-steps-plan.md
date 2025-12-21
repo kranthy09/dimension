@@ -26,7 +26,7 @@ Both direct and api lib methods are pointed to same, correct endpoint.
 
 Remaining
 
-### [PLANNING] Find a way to show images from inside application folders
+### [DONE] Find a way to show images from inside application folders
 
 - This modifies the current existing upload, form to integrate with images.
 - The final structure of the markdown folder will be
@@ -49,4 +49,3 @@ remaining
 
 - Make in.evolune.dev for initial version of deployment
 - Make evolune.dev for final version of deployment.
-
