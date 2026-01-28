@@ -4,6 +4,7 @@ from sqlalchemy.sql import func
 import uuid
 from app.database import Base
 
+
 class ContentFile(Base):
     __tablename__ = "content_files"
 
@@ -25,7 +26,8 @@ class ContentFile(Base):
 
     # Audit
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at = Column(DateTime(timezone=True),
+                        server_default=func.now(), onupdate=func.now())
 
     __table_args__ = (
         Index('idx_section_filename', 'section', 'filename', unique=True),

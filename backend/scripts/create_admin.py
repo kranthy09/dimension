@@ -69,7 +69,7 @@ def create_admin_user(email: str, password: str, full_name: str):
         session.commit()
         session.refresh(admin_user)
 
-        print(f"✅ Admin user created successfully!")
+        print("✅ Admin user created successfully!")
         print(f"   Email: {admin_user.email}")
         print(f"   Name: {admin_user.full_name}")
         print(f"   Admin: {admin_user.is_admin}")

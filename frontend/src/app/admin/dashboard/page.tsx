@@ -11,8 +11,6 @@ export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [section, setSection] = useState<'blog' | 'project' | 'case-study'>('blog')
   const [content, setContent] = useState<ContentFile[]>([])
-  const [selectedItem, setSelectedItem] = useState<ContentFile | null>(null)
-  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -58,26 +56,6 @@ export default function AdminDashboardPage() {
   const handleLogout = () => {
     authService.logout()
     router.push('/admin/login')
-  }
-
-  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploading(true)
-    const token = authService.getToken()
-
-    try {
-      // Use the centralized API client
-      await api.content.upload(section, file, token || undefined)
-      await loadContent()
-      e.target.value = '' // Reset input
-    } catch (error) {
-      console.error('Upload error:', error)
-      alert('Failed to upload file')
-    } finally {
-      setUploading(false)
-    }
   }
 
   const handleDelete = async (id: string) => {
@@ -200,24 +178,6 @@ export default function AdminDashboardPage() {
           ))}
         </div>
 
-        {/* Upload Section */}
-        <div className="card p-6 mb-8">
-          <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
-            Upload New {section.charAt(0).toUpperCase() + section.slice(1).replace('-', ' ')}
-          </h2>
-          <div className="flex items-center gap-4">
-            <input
-              type="file"
-              accept=".md"
-              onChange={handleUpload}
-              disabled={uploading}
-              className="flex-1"
-              style={{ color: 'var(--text-primary)' }}
-            />
-            {uploading && <span style={{ color: 'var(--text-muted)' }}>Uploading...</span>}
-          </div>
-        </div>
-
         {/* Content List */}
         <div className="card p-6">
           <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
@@ -259,6 +219,17 @@ export default function AdminDashboardPage() {
                     </div>
 
                     <div className="flex items-center gap-2 ml-4">
+                      <button
+                        onClick={() => router.push(`/admin/edit/${item.id}`)}
+                        className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md hover:scale-105"
+                        style={{
+                          backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                          color: '#3b82f6',
+                          border: '2px solid #3b82f6',
+                        }}
+                      >
+                        ✏️ Edit
+                      </button>
                       <button
                         onClick={() => handleTogglePublish(item)}
                         className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md hover:scale-105"

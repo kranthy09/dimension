@@ -4,6 +4,8 @@ from datetime import datetime
 from uuid import UUID
 
 # Metadata schemas
+
+
 class BlogMetadata(BaseModel):
     slug: str
     title: str
@@ -13,6 +15,7 @@ class BlogMetadata(BaseModel):
     readTime: Optional[int] = None
     thumbnail: Optional[str] = None
     featured: bool = False
+
 
 class ProjectMetadata(BaseModel):
     slug: str
@@ -25,6 +28,7 @@ class ProjectMetadata(BaseModel):
     thumbnail: Optional[str] = None
     featured: bool = False
 
+
 class CaseStudyMetadata(BaseModel):
     slug: str
     title: str
@@ -35,12 +39,16 @@ class CaseStudyMetadata(BaseModel):
     featured: bool = False
 
 # API Schemas
+
+
 class ContentFileCreate(BaseModel):
     section: Literal["blog", "project", "case-study"]
+
 
 class ContentFileUpdate(BaseModel):
     is_published: Optional[bool] = None
     metajson: Optional[dict[str, Any]] = None
+
 
 class ContentFileResponse(BaseModel):
     id: UUID
@@ -56,6 +64,7 @@ class ContentFileResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 class ContentFileListItem(BaseModel):
     id: UUID
     section: str
@@ -67,6 +76,7 @@ class ContentFileListItem(BaseModel):
 
     class Config:
         from_attributes = True
+
 
 class MarkdownContentResponse(BaseModel):
     content: str

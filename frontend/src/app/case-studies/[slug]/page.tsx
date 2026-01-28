@@ -70,7 +70,7 @@ export default function CaseStudyPage() {
             publishedAt={content.published_at || undefined}
           />
 
-          <MarkdownRenderer content={markdown} />
+          <MarkdownRenderer content={markdown} contentFile={content} />
         </article>
 
         {/* Right Table of Contents (hidden on mobile) */}

@@ -5,13 +5,15 @@ import remarkGfm from 'remark-gfm'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useEffect, useState } from 'react'
+import { ContentFile } from '@/lib/api'
 
 interface MarkdownRendererProps {
   content: string
   className?: string
+  contentFile?: ContentFile
 }
 
-export function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, className = '', contentFile }: MarkdownRendererProps) {
   const [isDark, setIsDark] = useState(false)
 
   useEffect(() => {
@@ -38,6 +40,41 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
+  }
+
+  // Extract folder name from file_path
+  const getFolderFromPath = (filePath: string): string => {
+    // "markdown/blog/Blog_Title_Name/content.md" → "Blog_Title_Name"
+    const parts = filePath.split('/')
+    return parts[parts.length - 2]
+  }
+
+  // Resolve relative image paths to absolute URLs
+  const resolveImagePath = (src: string): string => {
+    if (!src) return ''
+
+    // Already absolute? Return as-is
+    if (src.startsWith('http://') || src.startsWith('https://')) {
+      return src
+    }
+
+    // Need contentFile to resolve relative paths
+    if (!contentFile) return src
+
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    const basePath = apiBase.replace('/api/v1', '')
+    const folderName = getFolderFromPath(contentFile.file_path)
+    const section = contentFile.section
+
+    // Handle different relative path formats
+    if (src.startsWith('./images/')) {
+      const filename = src.replace('./images/', '')
+      return `${basePath}/media/markdown/${section}/${folderName}/images/${filename}`
+    } else if (src.startsWith('images/')) {
+      return `${basePath}/media/markdown/${section}/${folderName}/images/${src}`
+    }
+
+    return src
   }
 
   return (
@@ -191,6 +228,18 @@ export function MarkdownRenderer({ content, className = '' }: MarkdownRendererPr
             >
               {children}
             </td>
+          ),
+          img: ({ src, alt, ...props }: any) => (
+            <img
+              src={resolveImagePath(src || '')}
+              alt={alt || ''}
+              className="rounded-lg my-6 max-w-full h-auto"
+              style={{
+                border: '1px solid var(--border)',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+              }}
+              {...props}
+            />
           ),
         }}
       >
