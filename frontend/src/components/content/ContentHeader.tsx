@@ -19,7 +19,7 @@ export function ContentHeader({
 }: ContentHeaderProps) {
   return (
     <header className="mb-12">
-      {category && <Badge variant="outline">{category}</Badge>}
+      {category && <Badge variant="subtle">{category}</Badge>}
 
       <h1 className="text-4xl md:text-5xl font-bold mt-4 mb-3" style={{ color: 'var(--text-primary)' }}>
         {title}
