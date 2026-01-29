@@ -41,6 +41,8 @@ git push origin main
 
 ```bash
 ssh user@vps-ip
+ssh evolune
+su - devuser
 cd /path/to/dimension
 ./deploy-vps.sh
 ```

@@ -230,16 +230,27 @@ export function MarkdownRenderer({ content, className = '', contentFile }: Markd
             </td>
           ),
           img: ({ src, alt, ...props }: any) => (
-            <img
-              src={resolveImagePath(src || '')}
-              alt={alt || ''}
-              className="rounded-lg my-6 max-w-full h-auto"
+            <div
+              className="my-6 rounded-lg p-4"
               style={{
+                backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
                 border: '1px solid var(--border)',
-                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                boxShadow: isDark
+                  ? '0 4px 6px rgba(0, 0, 0, 0.3)'
+                  : '0 4px 6px rgba(0, 0, 0, 0.1)'
               }}
-              {...props}
-            />
+            >
+              <img
+                src={resolveImagePath(src || '')}
+                alt={alt || ''}
+                className="rounded max-w-full h-auto mx-auto"
+                style={{
+                  backgroundColor: isDark ? 'rgba(255, 255, 255, 0.9)' : '#ffffff',
+                  padding: '8px'
+                }}
+                {...props}
+              />
+            </div>
           ),
         }}
       >
