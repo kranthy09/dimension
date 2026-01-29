@@ -18,12 +18,15 @@ export function TableOfContents({ markdown }: TableOfContentsProps) {
   const activeItemRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
-    // Extract headings from markdown
+    // Strip fenced code blocks before extracting headings
+    // so that # comments in code are not treated as headings
+    const strippedMarkdown = markdown.replace(/```[\s\S]*?```/g, '')
+
     const headingRegex = /^(#{1,3})\s+(.+)$/gm
     const matches: Heading[] = []
     let match
 
-    while ((match = headingRegex.exec(markdown)) !== null) {
+    while ((match = headingRegex.exec(strippedMarkdown)) !== null) {
       const level = match[1].length
       const text = match[2].trim()
       // Create ID similar to how markdown renderers do it
