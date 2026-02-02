@@ -213,7 +213,7 @@ export function MarkdownRenderer({ content, className = '', contentFile }: Markd
             </div>
           ),
           thead: ({ children }) => (
-            <thead style={{ backgroundColor: 'var(--sand-100)' }}>
+            <thead style={{ backgroundColor: 'var(--bg-secondary)' }}>
               {children}
             </thead>
           ),
