@@ -47,6 +47,7 @@ export function Header() {
     { href: '/blog', label: 'Blog' },
     { href: '/projects', label: 'Projects' },
     { href: '/case-studies', label: 'Case Studies' },
+    { href: '/dsa', label: 'DSA' },
   ]
 
   return (

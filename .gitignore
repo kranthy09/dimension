@@ -1,6 +1,8 @@
 # custom
 next-steps-plan.md
 blog_drafts/
+.claude
+.claude_code
 # Python - Backend
 .claude
 __pycache__/
