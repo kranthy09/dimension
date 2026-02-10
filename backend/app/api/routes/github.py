@@ -16,15 +16,34 @@ async def check_github_connection():
 
 
 @router.get("/dsa/tree")
-async def get_dsa_tree():
-    """Return the raw repository tree for the explorer UI."""
+async def get_dsa_tree(prefix: str = "solutions/"):
+    """Return the repository tree filtered by prefix."""
     try:
-        tree = await github_service.get_tree()
+        tree = await github_service.get_tree(prefix=prefix)
         return {"tree": tree}
     except RateLimitError:
         raise HTTPException(
             status_code=429,
-            detail="GitHub API rate limit exceeded. Please try again later.",
+            detail="GitHub API rate limit exceeded.",
+        )
+    except GitHubAPIError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/dsa/latest")
+async def get_latest_file():
+    """Return the most recently committed file under solutions/."""
+    try:
+        result = await github_service.get_latest_file()
+        if result is None:
+            raise HTTPException(
+                status_code=404,
+                detail="No files found in solutions/",
+            )
+        return result
+    except RateLimitError:
+        raise HTTPException(
+            status_code=429, detail="Rate limit exceeded"
         )
     except GitHubAPIError as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -53,6 +53,15 @@ export async function fetchFileContent(filePath: string): Promise<FileDetail> {
   return response.json()
 }
 
+// Fetch the latest committed file under solutions/
+export async function fetchLatestFile(): Promise<
+  FileDetail & { commit_date?: string; commit_message?: string }
+> {
+  const response = await fetch(`${API_BASE}/github/dsa/latest`)
+  if (!response.ok) throw new Error('Failed to fetch latest file')
+  return response.json()
+}
+
 // Check GitHub API health
 export async function checkGitHubHealth() {
   const response = await fetch(`${API_BASE}/github/health`)

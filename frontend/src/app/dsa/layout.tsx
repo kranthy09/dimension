@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { usePathname } from 'next/navigation'
 import { fetchTree, buildTree, type TreeNode } from '@/lib/github'
 import Link from 'next/link'
@@ -136,6 +136,7 @@ function TreeNodeRow({
 
 export default function DSALayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const [tree, setTree] = useState<TreeNode[]>([])
   const [loading, setLoading] = useState(true)
@@ -143,6 +144,7 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set())
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true)
 
   // Derive active file path from URL
   const activePath = useMemo(() => {
@@ -151,10 +153,22 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
     return decodeURIComponent(segment)
   }, [pathname])
 
-  // Close sidebar on route change (mobile)
+  // Close mobile sidebar on route change
   useEffect(() => {
     setSidebarOpen(false)
   }, [pathname])
+
+  // Ctrl+K / Cmd+K to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   useEffect(() => {
     async function load() {
@@ -162,8 +176,15 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
         setLoading(true)
         const data = await fetchTree()
         const nested = buildTree(data.tree)
-        setTree(nested)
-        setExpandedPaths(new Set(nested.filter((n) => n.type === 'tree').map((n) => n.path)))
+
+        // Unwrap single root folder (e.g. "solutions") so its children display directly
+        const displayTree =
+          nested.length === 1 && nested[0].type === 'tree' ? nested[0].children : nested
+
+        setTree(displayTree)
+        setExpandedPaths(
+          new Set(displayTree.filter((n) => n.type === 'tree').map((n) => n.path))
+        )
         setError(null)
       } catch {
         setError('Failed to load repository tree.')
@@ -183,6 +204,7 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
     })
   }
 
+  // Tree filtering for sidebar
   const filteredTree = useMemo(() => {
     if (!searchQuery.trim()) return tree
     const q = searchQuery.toLowerCase()
@@ -216,22 +238,40 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
     return all
   }, [filteredTree, searchQuery, expandedPaths])
 
+  // Flat file search results for the content-area search dropdown
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return []
+    const q = searchQuery.toLowerCase()
+
+    function collectBlobs(nodes: TreeNode[]): TreeNode[] {
+      const results: TreeNode[] = []
+      for (const n of nodes) {
+        if (n.type === 'blob' && n.name.toLowerCase().includes(q)) {
+          results.push(n)
+        }
+        if (n.children) {
+          results.push(...collectBlobs(n.children))
+        }
+      }
+      return results
+    }
+
+    return collectBlobs(tree).slice(0, 20)
+  }, [tree, searchQuery])
+
   const sidebarContent = (
-    <div className="flex flex-col h-full">
-      {/* Search */}
-      <div className="p-3 border-b" style={{ borderColor: 'var(--border)' }}>
-        <input
-          type="text"
-          placeholder="Search files..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-3 py-2 rounded-md border text-sm focus:outline-none focus:ring-1"
-          style={{
-            background: 'var(--bg-primary)',
-            color: 'var(--text-primary)',
-            borderColor: 'var(--border)',
-          }}
-        />
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Sidebar heading */}
+      <div
+        className="px-4 py-3 border-b flex-shrink-0"
+        style={{ borderColor: 'var(--border)' }}
+      >
+        <h3
+          className="text-sm font-semibold tracking-wide uppercase"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          DSA Dashboard
+        </h3>
       </div>
 
       {/* Tree */}
@@ -245,7 +285,9 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
           </div>
         ) : error ? (
           <div className="text-center py-8 px-3">
-            <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>{error}</p>
+            <p className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>
+              {error}
+            </p>
             <button
               onClick={() => window.location.reload()}
               className="text-sm font-medium"
@@ -255,7 +297,10 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         ) : filteredTree.length === 0 ? (
-          <div className="text-center py-8 text-sm" style={{ color: 'var(--text-muted)' }}>
+          <div
+            className="text-center py-8 text-sm"
+            style={{ color: 'var(--text-muted)' }}
+          >
             {searchQuery ? 'No files match your search.' : 'Repository is empty.'}
           </div>
         ) : (
@@ -280,20 +325,47 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
       className="flex pt-16"
       style={{ background: 'var(--bg-primary)', minHeight: '100vh' }}
     >
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar - animated */}
       <aside
-        className="hidden lg:flex flex-col border-r flex-shrink-0"
+        className="hidden lg:flex flex-col border-r flex-shrink-0 overflow-hidden"
+        aria-hidden={!desktopSidebarOpen}
         style={{
-          width: '280px',
-          borderColor: 'var(--border)',
+          width: desktopSidebarOpen ? '280px' : '0px',
+          borderColor: desktopSidebarOpen ? 'var(--border)' : 'transparent',
           background: 'var(--bg-secondary)',
           height: 'calc(100vh - 4rem)',
           position: 'sticky',
           top: '4rem',
+          transition: 'width 0.2s ease',
         }}
       >
-        {sidebarContent}
+        <div style={{ width: '280px', minWidth: '280px', height: '100%' }}>
+          {sidebarContent}
+        </div>
       </aside>
+
+      {/* Desktop sidebar toggle */}
+      <button
+        className="hidden lg:flex fixed top-20 z-30 items-center justify-center p-1.5 rounded-r-lg border border-l-0 shadow-sm"
+        style={{
+          left: desktopSidebarOpen ? '280px' : '0px',
+          background: 'var(--bg-secondary)',
+          borderColor: 'var(--border)',
+          color: 'var(--text-secondary)',
+          transition: 'left 0.2s ease',
+        }}
+        onClick={() => setDesktopSidebarOpen((prev) => !prev)}
+        aria-label={desktopSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+      >
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d={desktopSidebarOpen ? 'M11 19l-7-7 7-7' : 'M13 5l7 7-7 7'}
+          />
+        </svg>
+      </button>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -338,6 +410,81 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
 
       {/* Content area */}
       <main className="flex-1 min-w-0 overflow-y-auto" style={{ height: 'calc(100vh - 4rem)' }}>
+        {/* Search bar */}
+        <div
+          className="sticky top-0 z-20 px-6 py-2.5 border-b"
+          style={{ background: 'var(--bg-primary)', borderColor: 'var(--border)' }}
+        >
+          <div className="relative max-w-2xl lg:ml-6">
+            <svg
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search solutions... (Ctrl+K)"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2"
+              style={{
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)',
+                borderColor: 'var(--border)',
+              }}
+            />
+            {/* Search results dropdown */}
+            {searchQuery.trim() && searchResults.length > 0 && (
+              <div
+                className="absolute left-0 right-0 mt-1 max-h-64 overflow-y-auto rounded-lg border shadow-lg z-30"
+                style={{
+                  background: 'var(--bg-primary)',
+                  borderColor: 'var(--border)',
+                }}
+              >
+                {searchResults.map((node) => (
+                  <Link
+                    key={node.path}
+                    href={`/dsa/${encodeURIComponent(node.path)}`}
+                    className="block px-4 py-2.5 text-sm transition-colors"
+                    style={{ color: 'var(--text-primary)' }}
+                    onClick={() => setSearchQuery('')}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--bg-secondary)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent'
+                    }}
+                  >
+                    <span className="font-medium">{node.name}</span>
+                    <span
+                      className="ml-2 text-xs"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {node.path}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+          <p
+            className="text-xs mt-1.5 lg:ml-6"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Browse solutions, track progress, and study patterns
+          </p>
+        </div>
         {children}
       </main>
     </div>

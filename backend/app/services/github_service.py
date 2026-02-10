@@ -117,8 +117,10 @@ class GitHubService:
         except Exception as e:
             raise GitHubAPIError(f"Unexpected error: {str(e)}")
 
-    async def get_tree(self) -> List[Dict[str, Any]]:
-        """Return the repository tree with only the fields the UI needs."""
+    async def get_tree(
+        self, prefix: str = "solutions/"
+    ) -> List[Dict[str, Any]]:
+        """Return the repository tree filtered to a directory prefix."""
         tree = await self._fetch_repository_tree()
         return [
             {
@@ -128,6 +130,9 @@ class GitHubService:
                 "size": item.get("size"),
             }
             for item in tree
+            if not prefix
+            or item["path"].startswith(prefix)
+            or item["path"] == prefix.rstrip("/")
         ]
 
     def _extract_metadata(self, code_content: str) -> Dict[str, Any]:
@@ -188,20 +193,26 @@ class GitHubService:
                 response.raise_for_status()
                 data = response.json()
 
-                code_content = base64.b64decode(
-                    data["content"]).decode("utf-8")
+                code_content = base64.b64decode(data["content"]).decode(
+                    "utf-8"
+                )
                 metadata = self._extract_metadata(code_content)
 
                 file_name = file_path.split("/")[-1]
-                file_base = file_name.rsplit(
-                    ".", 1)[0] if "." in file_name else file_name
+                file_base = (
+                    file_name.rsplit(".", 1)[0]
+                    if "." in file_name
+                    else file_name
+                )
 
                 result = {
                     "path": file_path,
                     "name": file_base.replace("_", " ").title(),
                     "file_name": file_name,
                     "code": code_content,
-                    "language": file_name.rsplit(".", 1)[1] if "." in file_name else "",
+                    "language": (
+                        file_name.rsplit(".", 1)[1] if "." in file_name else ""
+                    ),
                     "size": data["size"],
                     "sha": data["sha"],
                     "github_url": data["html_url"],
@@ -219,6 +230,81 @@ class GitHubService:
             raise GitHubAPIError(f"Failed to fetch file content: {e}")
         except Exception as e:
             raise GitHubAPIError(f"Unexpected error: {str(e)}")
+
+    async def get_latest_file(
+        self, directory_prefix: str = "solutions/"
+    ) -> Optional[Dict[str, Any]]:
+        """Return the most recently committed file under directory_prefix."""
+        cache_key = f"latest_file_{directory_prefix}"
+        cached = self._get_cache(cache_key)
+        if cached is not None:
+            return cached
+
+        try:
+            async with AsyncClient() as client:
+                # Get the latest commit touching the directory
+                commits_response = await client.get(
+                    f"{self.base_url}/repos/{self.repo_owner}/{self.repo_name}"
+                    f"/commits",
+                    params={"path": directory_prefix, "per_page": 1},
+                    headers=self.headers,
+                    timeout=10.0,
+                )
+                commits_response.raise_for_status()
+                commits = commits_response.json()
+
+                if not commits:
+                    return None
+
+                commit_sha = commits[0]["sha"]
+
+                # Get the commit detail to find changed files
+                detail_response = await client.get(
+                    f"{self.base_url}/repos/{self.repo_owner}/{self.repo_name}"
+                    f"/commits/{commit_sha}",
+                    headers=self.headers,
+                    timeout=10.0,
+                )
+                detail_response.raise_for_status()
+                detail = detail_response.json()
+
+                # Find the first added/modified file under the prefix
+                target_file = None
+                for f in detail.get("files", []):
+                    if f["filename"].startswith(directory_prefix) and f[
+                        "status"
+                    ] in ("added", "modified"):
+                        target_file = f["filename"]
+                        break
+
+                # Fallback: any file under prefix
+                if not target_file:
+                    for f in detail.get("files", []):
+                        if f["filename"].startswith(directory_prefix):
+                            target_file = f["filename"]
+                            break
+
+                if not target_file:
+                    return None
+
+                # Reuse existing method for full file content
+                result = await self.get_file_content(target_file)
+                result["commit_date"] = commits[0]["commit"]["committer"][
+                    "date"
+                ]
+                result["commit_message"] = commits[0]["commit"]["message"]
+
+                self._set_cache(cache_key, result)
+                return result
+
+        except HTTPStatusError as e:
+            if e.response.status_code == 403:
+                raise RateLimitError("GitHub API rate limit exceeded")
+            raise GitHubAPIError(f"Failed to fetch latest file: {e}")
+        except Exception as e:
+            raise GitHubAPIError(
+                f"Unexpected error fetching latest file: {str(e)}"
+            )
 
     def clear_cache(self) -> Dict[str, str]:
         """Clear all cached GitHub data."""
