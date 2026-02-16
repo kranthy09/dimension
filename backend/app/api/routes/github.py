@@ -1,7 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
-from app.services.github_service import github_service
 from app.core.exceptions import GitHubAPIError, RateLimitError
+from app.database import get_db
+from app.services.dsa_sync_service import DsaSyncService
+from app.services.github_service import github_service
 
 router = APIRouter(prefix="/github", tags=["GitHub DSA"])
 
@@ -47,6 +50,27 @@ async def get_latest_file():
         )
     except GitHubAPIError as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/dsa/stats")
+def get_dsa_stats(db: Session = Depends(get_db)):
+    """Return aggregated DSA dashboard statistics from DB."""
+    service = DsaSyncService(db)
+    return service.get_stats()
+
+
+@router.post("/dsa/sync")
+async def trigger_sync(db: Session = Depends(get_db)):
+    """Trigger incremental sync (commits since last sync)."""
+    service = DsaSyncService(db)
+    return await service.incremental_sync()
+
+
+@router.post("/dsa/sync/full")
+async def trigger_full_sync(db: Session = Depends(get_db)):
+    """Trigger full re-sync of all files and commits."""
+    service = DsaSyncService(db)
+    return await service.full_sync()
 
 
 @router.get("/dsa/file/{file_path:path}")

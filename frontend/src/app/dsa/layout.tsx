@@ -59,6 +59,7 @@ function TreeNodeRow({
   expandedPaths,
   toggleExpand,
   activePath,
+  activeParentPaths,
   onFileClick,
 }: {
   node: TreeNode
@@ -66,11 +67,13 @@ function TreeNodeRow({
   expandedPaths: Set<string>
   toggleExpand: (path: string) => void
   activePath: string | null
+  activeParentPaths: Set<string>
   onFileClick?: () => void
 }) {
   const isFolder = node.type === 'tree'
   const isOpen = expandedPaths.has(node.path)
   const isActive = activePath === node.path
+  const isActiveParent = activeParentPaths.has(node.path)
 
   if (isFolder) {
     return (
@@ -80,7 +83,8 @@ function TreeNodeRow({
           className="w-full flex items-center gap-1.5 py-1.5 px-2 rounded transition-colors text-sm"
           style={{
             paddingLeft: `${depth * 1 + 0.5}rem`,
-            color: 'var(--text-primary)',
+            color: isActiveParent ? 'var(--accent-primary)' : 'var(--text-primary)',
+            fontWeight: isActiveParent ? 600 : 500,
             background: 'transparent',
           }}
           onMouseEnter={(e) => {
@@ -103,6 +107,7 @@ function TreeNodeRow({
               expandedPaths={expandedPaths}
               toggleExpand={toggleExpand}
               activePath={activePath}
+              activeParentPaths={activeParentPaths}
               onFileClick={onFileClick}
             />
           ))}
@@ -182,9 +187,7 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
           nested.length === 1 && nested[0].type === 'tree' ? nested[0].children : nested
 
         setTree(displayTree)
-        setExpandedPaths(
-          new Set(displayTree.filter((n) => n.type === 'tree').map((n) => n.path))
-        )
+        setExpandedPaths(new Set())
         setError(null)
       } catch {
         setError('Failed to load repository tree.')
@@ -194,6 +197,33 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
     }
     load()
   }, [])
+
+  // Auto-expand active file's parent folders
+  useEffect(() => {
+    if (activePath && tree.length > 0) {
+      const segments = activePath.split('/')
+      const parentPaths: string[] = []
+      for (let i = 1; i < segments.length; i++) {
+        parentPaths.push(segments.slice(0, i).join('/'))
+      }
+      setExpandedPaths((prev) => {
+        const next = new Set(prev)
+        parentPaths.forEach((p) => next.add(p))
+        return next
+      })
+    }
+  }, [activePath, tree])
+
+  // Compute active parent paths for highlight
+  const activeParentPaths = useMemo(() => {
+    if (!activePath) return new Set<string>()
+    const segments = activePath.split('/')
+    const parents = new Set<string>()
+    for (let i = 1; i < segments.length; i++) {
+      parents.add(segments.slice(0, i).join('/'))
+    }
+    return parents
+  }, [activePath])
 
   const toggleExpand = (path: string) => {
     setExpandedPaths((prev) => {
@@ -312,6 +342,7 @@ export default function DSALayout({ children }: { children: React.ReactNode }) {
               expandedPaths={displayExpanded}
               toggleExpand={toggleExpand}
               activePath={activePath}
+              activeParentPaths={activeParentPaths}
               onFileClick={() => setSidebarOpen(false)}
             />
           ))

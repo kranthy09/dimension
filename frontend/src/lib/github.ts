@@ -39,6 +39,34 @@ export interface TreeResponse {
   tree: TreeItem[]
 }
 
+// Dashboard stats
+export interface DsaStats {
+  total_problems: number
+  difficulty: { easy: number; medium: number; hard: number }
+  today: number
+  this_week: number
+  current_streak: number
+  topics: { name: string; count: number; last_file: string; last_updated: string }[]
+  activity: { date: string; count: number }[]
+  recent: {
+    filename: string
+    path: string
+    difficulty: string
+    tags: string[]
+    committed_at: string
+    message: string
+    folder: string
+  }[]
+}
+
+// Fetch aggregated DSA dashboard stats
+export async function fetchStats(): Promise<DsaStats> {
+  const response = await fetch(`${API_BASE}/github/dsa/stats`)
+  console.log("response: ", response)
+  if (!response.ok) throw new Error('Failed to fetch DSA stats')
+  return response.json()
+}
+
 // Fetch the flat tree from the API
 export async function fetchTree(): Promise<TreeResponse> {
   const response = await fetch(`${API_BASE}/github/dsa/tree`)
