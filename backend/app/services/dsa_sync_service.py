@@ -8,7 +8,12 @@ from sqlalchemy import func, text
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
-from app.models.dsa import DsaDailyActivity, DsaProblem, DsaSyncState, DsaTopicStats
+from app.models.dsa import (
+    DsaDailyActivity,
+    DsaProblem,
+    DsaSyncState,
+    DsaTopicStats,
+)
 from app.services.github_service import github_service
 
 logger = logging.getLogger(__name__)
@@ -246,13 +251,9 @@ class DsaSyncService:
                                         .first()
                                     )
                                     if problem:
-                                        if (
-                                            problem.first_seen_at > commit_dt
-                                        ):
+                                        if problem.first_seen_at > commit_dt:
                                             problem.first_seen_at = commit_dt
-                                        if (
-                                            problem.last_updated_at < commit_dt
-                                        ):
+                                        if problem.last_updated_at < commit_dt:
                                             problem.last_updated_at = commit_dt
                         except Exception as e:
                             logger.warning(
@@ -390,17 +391,12 @@ class DsaSyncService:
                                 # Check if SHA changed
                                 existing = (
                                     self.db.query(DsaProblem)
-                                    .filter(
-                                        DsaProblem.path == cf["filename"]
-                                    )
+                                    .filter(DsaProblem.path == cf["filename"])
                                     .first()
                                 )
                                 current_sha = cf.get("sha", "")
 
-                                if (
-                                    existing
-                                    and existing.sha == current_sha
-                                ):
+                                if existing and existing.sha == current_sha:
                                     continue
 
                                 # Fetch file content for metadata
@@ -415,7 +411,10 @@ class DsaSyncService:
                                         "sha", current_sha
                                     )
                                 except Exception:
-                                    metadata = {"difficulty": "Medium", "tags": []}
+                                    metadata = {
+                                        "difficulty": "Medium",
+                                        "tags": [],
+                                    }
                                     file_sha = current_sha
 
                                 result = self._upsert_problem(
@@ -484,9 +483,7 @@ class DsaSyncService:
         """Dashboard stats from DB. Zero GitHub API calls. Single-pass queries."""
         # One query: total + difficulty (case-insensitive grouping)
         difficulty_rows = (
-            self.db.query(
-                func.lower(DsaProblem.difficulty), func.count()
-            )
+            self.db.query(func.lower(DsaProblem.difficulty), func.count())
             .group_by(func.lower(DsaProblem.difficulty))
             .all()
         )
@@ -499,9 +496,9 @@ class DsaSyncService:
                 "name": t.folder,
                 "count": t.problem_count,
                 "last_file": t.last_updated_file or "",
-                "last_updated": t.last_updated_at.isoformat()
-                if t.last_updated_at
-                else "",
+                "last_updated": (
+                    t.last_updated_at.isoformat() if t.last_updated_at else ""
+                ),
             }
             for t in self.db.query(DsaTopicStats)
             .order_by(DsaTopicStats.problem_count.desc())
@@ -525,9 +522,7 @@ class DsaSyncService:
         today_count = activity_map.get(date.today(), 0)
 
         week_start = date.today() - timedelta(days=date.today().weekday())
-        week_count = sum(
-            c for d, c in activity_map.items() if d >= week_start
-        )
+        week_count = sum(c for d, c in activity_map.items() if d >= week_start)
 
         # Streak — iterate the in-memory map, no extra queries
         streak = 0
@@ -548,9 +543,9 @@ class DsaSyncService:
                 "path": p.path,
                 "difficulty": p.difficulty or "Medium",
                 "tags": p.tags or [],
-                "committed_at": p.last_updated_at.isoformat()
-                if p.last_updated_at
-                else "",
+                "committed_at": (
+                    p.last_updated_at.isoformat() if p.last_updated_at else ""
+                ),
                 "message": "",
                 "folder": p.folder or "",
             }

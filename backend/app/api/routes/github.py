@@ -1,10 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
+import hashlib
+import hmac
+import logging
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.core.exceptions import GitHubAPIError, RateLimitError
-from app.database import get_db
+from app.database import SessionLocal, get_db
 from app.services.dsa_sync_service import DsaSyncService
 from app.services.github_service import github_service
+
+logger = logging.getLogger(__name__)
+settings = get_settings()
 
 router = APIRouter(prefix="/github", tags=["GitHub DSA"])
 
@@ -90,3 +98,63 @@ async def get_file_content(file_path: str):
 async def clear_cache():
     """Clear the GitHub API response cache."""
     return github_service.clear_cache()
+
+
+@router.post("/webhook")
+async def github_webhook(request: Request):
+    """Handle GitHub push webhooks to trigger incremental sync."""
+    # Validate webhook secret
+    secret = settings.GITHUB_WEBHOOK_SECRET
+    if not secret:
+        raise HTTPException(status_code=500, detail="Webhook secret not configured")
+
+    body = await request.body()
+    signature = request.headers.get("X-Hub-Signature-256")
+    if not signature:
+        raise HTTPException(status_code=400, detail="Missing signature header")
+
+    expected = "sha256=" + hmac.new(
+        secret.encode(), body, hashlib.sha256
+    ).hexdigest()
+    if not hmac.compare_digest(signature, expected):
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
+    # Only process push events
+    event = request.headers.get("X-GitHub-Event", "")
+    if event == "ping":
+        return {"status": "pong"}
+    if event != "push":
+        return {"status": "ignored", "event": event}
+
+    payload = await request.json()
+
+    # Check if any changed files are under solutions/
+    commits = payload.get("commits", [])
+    has_solutions = any(
+        f.startswith("solutions/")
+        for commit in commits
+        for f in commit.get("added", [])
+        + commit.get("modified", [])
+        + commit.get("removed", [])
+    )
+
+    if not has_solutions:
+        return {"status": "ignored", "reason": "no solutions/ changes"}
+
+    # Run incremental sync in background (don't block the webhook response)
+    import asyncio
+
+    async def _background_sync():
+        db = SessionLocal()
+        try:
+            service = DsaSyncService(db)
+            result = await service.incremental_sync()
+            logger.info("Webhook sync complete: %s", result)
+        except Exception as e:
+            logger.error("Webhook sync failed: %s", e)
+        finally:
+            db.close()
+
+    asyncio.create_task(_background_sync())
+
+    return {"status": "syncing"}

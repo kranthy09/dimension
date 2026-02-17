@@ -32,6 +32,7 @@ class BaseConfig(BaseSettings):
     GITHUB_REPO_OWNER: str = ""
     GITHUB_REPO_NAME: str = ""
     GITHUB_API_BASE: str = "https://api.github.com"
+    GITHUB_WEBHOOK_SECRET: str = ""
 
     # Security
     SECRET_KEY: str = "dev-only-key-change-in-production"
