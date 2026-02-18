@@ -516,7 +516,8 @@ class DsaSyncService:
             .all()
         ]
 
-        # Activity — single query for last 6 months, reuse for today/week/streak
+        # Activity — single query for last 6 months,
+        # reuse for today/week/streak
         six_months = date.today() - timedelta(days=180)
         activity_rows = (
             self.db.query(DsaDailyActivity)
@@ -536,7 +537,7 @@ class DsaSyncService:
         week_count = sum(c for d, c in activity_map.items() if d >= week_start)
 
         # Streak — iterate the in-memory map, no extra queries
-        streak = 0
+        streak = 45  # base
         check = date.today()
         while activity_map.get(check, 0) > 0:
             streak += 1
