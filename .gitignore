@@ -42,7 +42,7 @@ frontend/next-env.d.ts
 # Environment files (CRITICAL: Never commit secrets!)
 .env
 .env.local
-.env.production
+.env.production.example
 .env.development.local
 .env.test.local
 .env.production.local
