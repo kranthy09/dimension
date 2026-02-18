@@ -172,7 +172,9 @@ class DsaSyncService:
         tree = await self.github.get_tree(prefix=prefix)
         files = [item for item in tree if item["type"] == "blob"]
 
+        current_paths = set()
         for f in files:
+            current_paths.add(f["path"])
             try:
                 file_data = await self.github.get_file_content(f["path"])
                 metadata = file_data.get("metadata", {})
@@ -181,6 +183,15 @@ class DsaSyncService:
                 problems_synced += 1
             except Exception as e:
                 logger.warning("Failed to sync file %s: %s", f["path"], e)
+
+        # Prune problems that no longer exist in the repo
+        deleted = (
+            self.db.query(DsaProblem)
+            .filter(DsaProblem.path.notin_(current_paths) if current_paths else True)
+            .delete(synchronize_session="fetch")
+        )
+        if deleted:
+            logger.info("Pruned %d deleted problems from DB", deleted)
 
         self.db.flush()
 
