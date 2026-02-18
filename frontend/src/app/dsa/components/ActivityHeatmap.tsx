@@ -51,7 +51,7 @@ export default function ActivityHeatmap({ activity }: { activity: ActivityDay[] 
     const monthLabelsMap = new Map<number, string>()
 
     const current = new Date(startDate)
-    let maxCount = 0
+    let maxCount = 4  // minimum scale: ensures padded cells (count=1) always stay at lightest shade
     let weekIndex = 0
 
     while (current <= today) {

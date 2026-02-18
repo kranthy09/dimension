@@ -536,17 +536,36 @@ class DsaSyncService:
         week_start = date.today() - timedelta(days=date.today().weekday())
         week_count = sum(c for d, c in activity_map.items() if d >= week_start)
 
-        # Streak — iterate the in-memory map, no extra queries
-        streak = 45  # base
+        # Streak — gap-tolerant: gaps < 4 consecutive days don't break the streak
+        streak = 45  # base offset
         check = date.today()
-        while activity_map.get(check, 0) > 0:
-            streak += 1
+        consecutive_misses = 0
+        gap_tolerance = 3
+        while check >= date.today() - timedelta(days=180):
+            if activity_map.get(check, 0) > 0:
+                streak += 1
+                consecutive_misses = 0
+            else:
+                consecutive_misses += 1
+                if consecutive_misses > gap_tolerance:
+                    break
             check -= timedelta(days=1)
 
-        activity = [
-            {"date": str(r.date), "count": r.commit_count}
-            for r in activity_rows
-        ]
+        # Heatmap activity — pad every day in the 82-day window with at least 1
+        # so the heatmap has no empty (grey) cells. Real counts are preserved as-is.
+        heatmap_start = date.today() - timedelta(days=82)
+        padded: Dict[str, int] = {}
+        d = heatmap_start
+        while d <= date.today():
+            padded[str(d)] = 1  # floor of 1
+            d += timedelta(days=1)
+        for r in activity_rows:
+            date_str = str(r.date)
+            if date_str in padded:
+                padded[date_str] = max(r.commit_count, 1)
+            else:
+                padded[date_str] = r.commit_count  # outside window: real count
+        activity = [{"date": k, "count": v} for k, v in sorted(padded.items())]
 
         # Recent files — single query
         recent = [

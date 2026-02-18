@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>evolune.dev – Back shortly</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0e0d;
+      color: #e5e1dc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .container { max-width: 480px; padding: 2rem; }
+    .dot {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #f97316;
+      margin: 0 auto 2rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.9); }
+    }
+    h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: #f5f0eb; }
+    p { font-size: 0.875rem; color: #9a9490; line-height: 1.6; }
+    .refresh {
+      display: inline-block; margin-top: 1.5rem;
+      padding: 0.5rem 1.25rem; border-radius: 6px;
+      background: #f97316; color: #fff;
+      font-size: 0.875rem; text-decoration: none; cursor: pointer;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="dot"></div>
+    <h1>Redeploying – back in a moment</h1>
+    <p>The server is restarting. This usually takes less than a minute.</p>
+    <button class="refresh" onclick="location.reload()">Refresh</button>
+  </div>
+  <script>setTimeout(() => location.reload(), 15000)</script>
+</body>
+</html>
