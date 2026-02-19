@@ -380,7 +380,7 @@ class DsaSyncService:
 
                         try:
                             detail_resp = await client.get(
-                                f" \{self.github.base_url}/repos/{self.github.repo_owner}"
+                                f"{self.github.base_url}/repos/{self.github.repo_owner}"
                                 f"/{self.github.repo_name}/commits/{commit['sha']}",
                                 headers=self.github.headers,
                                 timeout=10.0,
