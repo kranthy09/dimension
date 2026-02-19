@@ -380,7 +380,7 @@ class DsaSyncService:
 
                         try:
                             detail_resp = await client.get(
-                                f"{self.github.base_url}/repos/{self.github.repo_owner}"
+                                f" \{self.github.base_url}/repos/{self.github.repo_owner}"
                                 f"/{self.github.repo_name}/commits/{commit['sha']}",
                                 headers=self.github.headers,
                                 timeout=10.0,
@@ -491,7 +491,10 @@ class DsaSyncService:
     # ── Stats (pure SQL) ──
 
     def get_stats(self) -> Dict[str, Any]:
-        """Dashboard stats from DB. Zero GitHub API calls. Single-pass queries."""
+        """
+        Dashboard stats from DB. Zero GitHub API calls.
+        Single-pass queries.
+        """
         # One query: total + difficulty (case-insensitive grouping)
         difficulty_rows = (
             self.db.query(func.lower(DsaProblem.difficulty), func.count())
@@ -536,7 +539,8 @@ class DsaSyncService:
         week_start = date.today() - timedelta(days=date.today().weekday())
         week_count = sum(c for d, c in activity_map.items() if d >= week_start)
 
-        # Streak — gap-tolerant: gaps < 4 consecutive days don't break the streak
+        # Streak — gap-tolerant: gaps < 4 consecutive days
+        # don't break the streak
         streak = 45  # base offset
         check = date.today()
         consecutive_misses = 0
@@ -552,7 +556,8 @@ class DsaSyncService:
             check -= timedelta(days=1)
 
         # Heatmap activity — pad every day in the 82-day window with at least 1
-        # so the heatmap has no empty (grey) cells. Real counts are preserved as-is.
+        # so the heatmap has no empty (grey) cells.
+        # Real counts are preserved as-is.
         heatmap_start = date.today() - timedelta(days=82)
         padded: Dict[str, int] = {}
         d = heatmap_start
