@@ -53,7 +53,7 @@ export default function StatCards({ stats }: { stats: DsaStats }) {
         <StatCard label="Total Solved" value={stats.total_problems} />
         <StatCard label="Today" value={stats.today} accent="var(--accent-primary)" />
         <StatCard label="This Week" value={stats.this_week} accent="var(--accent-primary)" />
-        <StatCard label="Streak" value={stats.current_streak} accent="#22c55e" mono />
+        {/* <StatCard label="Streak" value={stats.current_streak} accent="#22c55e" mono /> */}
         <StatCard label="Easy" value={stats.difficulty.easy} accent="#22c55e" />
         <StatCard label="Medium" value={stats.difficulty.medium} accent="#f59e0b" />
         <StatCard label="Hard" value={stats.difficulty.hard} accent="#ef4444" />
