@@ -36,7 +36,7 @@ export default function ActivityHeatmap({ activity }: { activity: ActivityDay[] 
     }
 
     const today = new Date()
-    const totalDays = 80 // ~26 weeks
+    const totalDays = 90 // ~26 weeks
     const startDate = new Date(today)
     startDate.setDate(today.getDate() - totalDays + 1)
 
