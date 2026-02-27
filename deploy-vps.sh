@@ -51,9 +51,27 @@ docker compose -f docker-compose.prod.yml up -d
 
 # Step 5: Check service health
 echo -e "${GREEN}[5/5] Checking service health...${NC}"
-sleep 5
 
-# Check if containers are running
+# Wait for frontend to be healthy (up to 3 minutes)
+echo -e "  Waiting for frontend to become healthy..."
+RETRIES=36
+while [ $RETRIES -gt 0 ]; do
+    HEALTH=$(docker compose -f docker-compose.prod.yml ps frontend --format "{{.Health}}" 2>/dev/null)
+    if [ "$HEALTH" = "healthy" ]; then
+        echo -e "  ✓ frontend: ${GREEN}healthy${NC}"
+        break
+    fi
+    echo -e "  frontend: ${YELLOW}${HEALTH:-starting}${NC} (retrying in 5s...)"
+    sleep 5
+    RETRIES=$((RETRIES-1))
+done
+
+# Restart nginx to pick up the new frontend container IP from Docker DNS
+echo -e "  Restarting nginx to refresh upstream DNS..."
+docker compose -f docker-compose.prod.yml restart nginx
+echo -e "  ✓ nginx: ${GREEN}restarted${NC}"
+
+# Check all containers
 CONTAINERS=$(docker compose -f docker-compose.prod.yml ps --services)
 for service in $CONTAINERS; do
     STATUS=$(docker compose -f docker-compose.prod.yml ps $service --format "{{.State}}")
