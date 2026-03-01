@@ -102,12 +102,20 @@ export default function ActivityHeatmap({ activity }: { activity: ActivityDay[] 
         borderColor: 'var(--border)',
       }}
     >
-      <h3
-        className="text-sm font-semibold mb-4"
-        style={{ color: 'var(--text-primary)' }}
-      >
-        Activity
-      </h3>
+      <div className="flex items-baseline justify-between mb-4">
+        <h3
+          className="text-sm font-semibold"
+          style={{ color: 'var(--text-primary)' }}
+        >
+          Repo Activity
+        </h3>
+        <span
+          className="text-[10px]"
+          style={{ color: 'var(--text-muted)' }}
+        >
+          commits / day
+        </span>
+      </div>
 
       <div className="overflow-x-auto">
         <div className="inline-flex flex-col gap-0.5 min-w-fit">

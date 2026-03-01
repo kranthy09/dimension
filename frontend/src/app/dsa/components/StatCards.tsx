@@ -97,12 +97,20 @@ function WeeklyChart({ data }: { data: WeekPoint[] }) {
     <div>
       {/* Header row with range filter pills */}
       <div className="flex items-center justify-between mb-3">
-        <h4
-          className="text-sm font-semibold"
-          style={{ color: 'var(--text-primary)' }}
-        >
-          Weekly Performance
-        </h4>
+        <div>
+          <h4
+            className="text-sm font-semibold"
+            style={{ color: 'var(--text-primary)' }}
+          >
+            Weekly Performance
+          </h4>
+          <p
+            className="text-[10px] mt-0.5"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            problems solved / week
+          </p>
+        </div>
         <div className="flex gap-1">
           {([4, 8, 12] as const).map((w) => (
             <button
