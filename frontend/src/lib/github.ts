@@ -48,6 +48,7 @@ export interface DsaStats {
   current_streak: number
   topics: { name: string; count: number; last_file: string; last_updated: string }[]
   activity: { date: string; count: number }[]
+  weekly_performance: { week_start: string; label: string; total: number }[]
   recent: {
     filename: string
     path: string

@@ -8,7 +8,7 @@ interface ActivityDay {
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const DAYS = ['', 'Mon', '', 'Wed', '', 'Fri', '']
+const DAYS = ['Mon', '', 'Wed', '', 'Fri', '', '']
 
 function getIntensity(count: number, max: number): number {
   if (count === 0) return 0
@@ -36,14 +36,15 @@ export default function ActivityHeatmap({ activity }: { activity: ActivityDay[] 
     }
 
     const today = new Date()
-    const totalDays = 90 // ~26 weeks
+    const totalDays = 100
     const startDate = new Date(today)
     startDate.setDate(today.getDate() - totalDays + 1)
 
-    // Adjust start to Sunday
+    // Adjust start to Monday (Monday-based week: Mon=0 ... Sun=6)
     const startDay = startDate.getDay()
-    if (startDay !== 0) {
-      startDate.setDate(startDate.getDate() - startDay)
+    const mondayOffset = (startDay + 6) % 7  // days to subtract to reach Monday
+    if (mondayOffset !== 0) {
+      startDate.setDate(startDate.getDate() - mondayOffset)
     }
 
     const weeks: { date: string; count: number; day: number }[][] = []
@@ -51,7 +52,7 @@ export default function ActivityHeatmap({ activity }: { activity: ActivityDay[] 
     const monthLabelsMap = new Map<number, string>()
 
     const current = new Date(startDate)
-    let maxCount = 4  // minimum scale: ensures padded cells (count=1) always stay at lightest shade
+    let maxCount = 1  // minimum to avoid division by zero; real scale driven by actual data
     let weekIndex = 0
 
     while (current <= today) {
@@ -59,17 +60,18 @@ export default function ActivityHeatmap({ activity }: { activity: ActivityDay[] 
       const count = activityMap.get(dateStr) || 0
       if (count > maxCount) maxCount = count
 
-      if (current.getDate() <= 7 && current.getDay() === 0) {
+      if (current.getDate() <= 7 && current.getDay() === 1) {  // first Monday of month
         monthLabelsMap.set(weekIndex, MONTHS[current.getMonth()])
       }
 
+      const dayMon = (current.getDay() + 6) % 7  // 0=Mon, 1=Tue, ..., 6=Sun
       currentWeek.push({
         date: dateStr,
         count,
-        day: current.getDay(),
+        day: dayMon,
       })
 
-      if (current.getDay() === 6) {
+      if (dayMon === 6) {  // Sunday ends the week
         weeks.push(currentWeek)
         currentWeek = []
         weekIndex++

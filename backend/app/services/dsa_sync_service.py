@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
+# Indian Standard Time (UTC+5:30)
+IST = timezone(timedelta(hours=5, minutes=30))
+
 # Extension → language display name
 EXT_MAP = {
     "py": "Python",
@@ -187,7 +190,11 @@ class DsaSyncService:
         # Prune problems that no longer exist in the repo
         deleted = (
             self.db.query(DsaProblem)
-            .filter(DsaProblem.path.notin_(current_paths) if current_paths else True)
+            .filter(
+                DsaProblem.path.notin_(current_paths)
+                if current_paths
+                else True
+            )
             .delete(synchronize_session="fetch")
         )
         if deleted:
@@ -204,7 +211,8 @@ class DsaSyncService:
                 page = 1
                 while True:
                     resp = await client.get(
-                        f"{self.github.base_url}/repos/{self.github.repo_owner}"
+                        f"{self.github.base_url}"
+                        f"/repos/{self.github.repo_owner}"
                         f"/{self.github.repo_name}/commits",
                         params={
                             "path": prefix,
@@ -228,15 +236,17 @@ class DsaSyncService:
                         commit_dt = datetime.fromisoformat(
                             commit_date_str.replace("Z", "+00:00")
                         )
-                        activity_date = commit_dt.date()
+                        activity_date = commit_dt.astimezone(IST).date()
 
                         # Get commit detail to count added/modified
                         added = 0
                         modified = 0
                         try:
                             detail_resp = await client.get(
-                                f"{self.github.base_url}/repos/{self.github.repo_owner}"
-                                f"/{self.github.repo_name}/commits/{commit['sha']}",
+                                f"{self.github.base_url}"
+                                f"/repos/{self.github.repo_owner}"
+                                f"/{self.github.repo_name}"
+                                f"/commits/{commit['sha']}",
                                 headers=self.github.headers,
                                 timeout=10.0,
                             )
@@ -351,7 +361,8 @@ class DsaSyncService:
                         params["since"] = state.last_synced_at.isoformat()
 
                     resp = await client.get(
-                        f"{self.github.base_url}/repos/{self.github.repo_owner}"
+                        f"{self.github.base_url}"
+                        f"/repos/{self.github.repo_owner}"
                         f"/{self.github.repo_name}/commits",
                         params=params,
                         headers=self.github.headers,
@@ -373,15 +384,17 @@ class DsaSyncService:
                         commit_date_str = commit["commit"]["committer"]["date"]
                         commit_dt = datetime.fromisoformat(
                             commit_date_str.replace("Z", "+00:00")
-                        )
+                        ).astimezone(IST)
 
                         added = 0
                         modified = 0
 
                         try:
                             detail_resp = await client.get(
-                                f"{self.github.base_url}/repos/{self.github.repo_owner}"
-                                f"/{self.github.repo_name}/commits/{commit['sha']}",
+                                f"{self.github.base_url}"
+                                f"/repos/{self.github.repo_owner}"
+                                f"/{self.github.repo_name}"
+                                f"/commits/{commit['sha']}",
                                 headers=self.github.headers,
                                 timeout=10.0,
                             )
@@ -521,7 +534,8 @@ class DsaSyncService:
 
         # Activity — single query for last 6 months,
         # reuse for today/week/streak
-        six_months = date.today() - timedelta(days=180)
+        today_ist = datetime.now(IST).date()
+        six_months = today_ist - timedelta(days=180)
         activity_rows = (
             self.db.query(DsaDailyActivity)
             .filter(DsaDailyActivity.date >= six_months)
@@ -534,18 +548,19 @@ class DsaSyncService:
             r.date: r.commit_count for r in activity_rows
         }
 
-        today_count = activity_map.get(date.today(), 0)
+        today_count = activity_map.get(today_ist, 0)
 
-        week_start = date.today() - timedelta(days=date.today().weekday())
+        # week_start: Monday of the current IST week (weekday() returns 0=Mon)
+        week_start = today_ist - timedelta(days=today_ist.weekday())
         week_count = sum(c for d, c in activity_map.items() if d >= week_start)
 
         # Streak — gap-tolerant: gaps < 4 consecutive days
         # don't break the streak
         streak = 45  # base offset
-        check = date.today()
+        check = today_ist
         consecutive_misses = 0
         gap_tolerance = 3
-        while check >= date.today() - timedelta(days=180):
+        while check >= today_ist - timedelta(days=180):
             if activity_map.get(check, 0) > 0:
                 streak += 1
                 consecutive_misses = 0
@@ -555,22 +570,47 @@ class DsaSyncService:
                     break
             check -= timedelta(days=1)
 
-        # Heatmap activity — pad every day in the 82-day window with at least 1
-        # so the heatmap has no empty (grey) cells.
-        # Real counts are preserved as-is.
-        heatmap_start = date.today() - timedelta(days=82)
-        padded: Dict[str, int] = {}
-        d = heatmap_start
-        while d <= date.today():
-            padded[str(d)] = 1  # floor of 1
-            d += timedelta(days=1)
-        for r in activity_rows:
-            date_str = str(r.date)
-            if date_str in padded:
-                padded[date_str] = max(r.commit_count, 1)
-            else:
-                padded[date_str] = r.commit_count  # outside window: real count
-        activity = [{"date": k, "count": v} for k, v in sorted(padded.items())]
+        # Heatmap: last 100 days, real commit counts only (no padding)
+        heatmap_start = today_ist - timedelta(days=99)
+        activity = [
+            {"date": str(r.date), "count": r.commit_count}
+            for r in activity_rows
+            if r.date >= heatmap_start and r.commit_count > 0
+        ]
+        activity.sort(key=lambda x: x["date"])
+
+        # Weekly performance — unique new problems per Mon–Sun IST week
+        # Source: dsa_problems.first_seen_at (one row per unique file path)
+        # Avoids double-counting from problems_modified in dsa_daily_activity.
+        twelve_weeks_ago = today_ist - timedelta(weeks=12)
+        since_dt = datetime(
+            twelve_weeks_ago.year,
+            twelve_weeks_ago.month,
+            twelve_weeks_ago.day,
+            tzinfo=IST,
+        )
+        new_problems = (
+            self.db.query(DsaProblem)
+            .filter(DsaProblem.first_seen_at >= since_dt)
+            .all()
+        )
+        weekly_totals: Dict[date, int] = {}
+        for p in new_problems:
+            ist_date = p.first_seen_at.astimezone(IST).date()
+            mon = ist_date - timedelta(days=ist_date.weekday())
+            weekly_totals[mon] = weekly_totals.get(mon, 0) + 1
+
+        current_mon = today_ist - timedelta(days=today_ist.weekday())
+        weekly_performance = []
+        for i in range(11, -1, -1):  # oldest → current
+            mon = current_mon - timedelta(weeks=i)
+            weekly_performance.append(
+                {
+                    "week_start": str(mon),
+                    "label": f"{mon.strftime('%b')} {mon.day}",
+                    "total": weekly_totals.get(mon, 0),
+                }
+            )
 
         # Recent files — single query
         recent = [
@@ -603,5 +643,6 @@ class DsaSyncService:
             "current_streak": streak,
             "topics": topics,
             "activity": activity,
+            "weekly_performance": weekly_performance,
             "recent": recent,
         }
