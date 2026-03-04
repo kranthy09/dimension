@@ -9,6 +9,8 @@ DSA Explorer — all running on a single VPS behind Nginx with SSL.
 
 **Live:** [evolune.dev](https://evolune.dev)
 
+**GitHub Synced Repo**: [engineering-excellence](https://github.com/kranthy09/engineering-excellence)
+
 ---
 
 ## What's Inside
