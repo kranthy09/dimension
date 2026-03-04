@@ -13,13 +13,13 @@ DSA Explorer — all running on a single VPS behind Nginx with SSL.
 
 ## What's Inside
 
-| Surface | What It Does |
-|---------|-------------|
-| **Blog / Projects / Case Studies** | Markdown-first CMS with admin upload, publish/unpublish, image management |
-| **DSA Explorer** | GitHub-synced LeetCode tracker with heatmap, weekly performance chart, and file viewer |
-| **Admin Panel** | JWT-authenticated upload interface at `/admin` |
-| **REST API** | 15 endpoints across auth, content, and GitHub routes |
-| **Infrastructure** | Docker Compose (dev + prod), Nginx reverse proxy, Let's Encrypt SSL |
+| Surface                            | What It Does                                                                           |
+| ---------------------------------- | -------------------------------------------------------------------------------------- |
+| **Blog / Projects / Case Studies** | Markdown-first CMS with admin upload, publish/unpublish, image management              |
+| **DSA Explorer**                   | GitHub-synced LeetCode tracker with heatmap, weekly performance chart, and file viewer |
+| **Admin Panel**                    | JWT-authenticated upload interface at `/admin`                                         |
+| **REST API**                       | 15 endpoints across auth, content, and GitHub routes                                   |
+| **Infrastructure**                 | Docker Compose (dev + prod), Nginx reverse proxy, Let's Encrypt SSL                    |
 
 ---
 
@@ -49,12 +49,12 @@ approach where each feature is planned, reviewed, and implemented using
 
 **Canonical docs** (in `.claude_code/docs/`) are the source of truth for the agent:
 
-| File | Purpose |
-|------|---------|
-| `Context.md` | Architecture, data flow, DB schema, env vars |
-| `Features.md` | Full feature spec with API table, design system |
-| `Request.md` | Feature backlog and user stories |
-| `Checklist.md` | Pre-code rules, test checklist, known pitfalls |
+| File           | Purpose                                         |
+| -------------- | ----------------------------------------------- |
+| `Context.md`   | Architecture, data flow, DB schema, env vars    |
+| `Features.md`  | Full feature spec with API table, design system |
+| `Request.md`   | Feature backlog and user stories                |
+| `Checklist.md` | Pre-code rules, test checklist, known pitfalls  |
 
 These are read at the start of every coding session to give the agent accurate,
 up-to-date project context — preventing regressions and duplicated effort.
@@ -145,6 +145,7 @@ timezone anchor.
 ## Tech Stack
 
 **Backend**
+
 - Python 3.11, FastAPI 0.109, Uvicorn
 - SQLAlchemy 2.0 (ORM), Alembic (migrations)
 - PostgreSQL 15 (JSONB indexes, TIMESTAMPTZ)
@@ -152,11 +153,13 @@ timezone anchor.
 - python-jose + bcrypt (JWT + password hashing)
 
 **Frontend**
+
 - Next.js 14 (App Router), TypeScript, Tailwind CSS
 - react-markdown + react-syntax-highlighter + remark-gfm + rehype-katex
 - Zustand (responsive state), pure SVG (charts — no chart library)
 
 **Infrastructure**
+
 - Docker Compose (local dev: 3 services, production: 4 with Nginx)
 - Nginx with Let's Encrypt SSL, Docker embedded DNS resolver
 - GitHub webhook for automatic DSA sync on push
@@ -188,12 +191,12 @@ docker compose exec backend python3 scripts/create_admin.py \
 
 **Access:**
 
-| URL | What |
-|-----|------|
-| `http://localhost:3000` | Frontend |
-| `http://localhost:3000/admin/login` | Admin panel |
-| `http://localhost:8000/docs` | Interactive API docs |
-| `http://localhost:3000/dsa` | DSA dashboard |
+| URL                                 | What                 |
+| ----------------------------------- | -------------------- |
+| `http://localhost:3000`             | Frontend             |
+| `http://localhost:3000/admin/login` | Admin panel          |
+| `http://localhost:8000/docs`        | Interactive API docs |
+| `http://localhost:3000/dsa`         | DSA dashboard        |
 
 **First DSA sync:**
 
@@ -225,6 +228,7 @@ cd /path/to/dimension
 ```
 
 The deploy script:
+
 1. Pulls latest code
 2. Rebuilds Docker images
 3. Brings services up
@@ -246,13 +250,13 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 ### Current setup (single VPS, Docker Compose)
 
-| Metric | Estimate |
-|--------|---------|
-| Concurrent visitors | ~200–500 comfortably |
-| API response time | < 50 ms (indexed DB queries) |
-| DSA dashboard load | < 100 ms (single DB read, no GitHub calls) |
-| Content reads | Thousands/day with no tuning |
-| Sync throughput | ~6 months of commits in a single full sync |
+| Metric              | Estimate                                   |
+| ------------------- | ------------------------------------------ |
+| Concurrent visitors | ~200–500 comfortably                       |
+| API response time   | < 50 ms (indexed DB queries)               |
+| DSA dashboard load  | < 100 ms (single DB read, no GitHub calls) |
+| Content reads       | Thousands/day with no tuning               |
+| Sync throughput     | ~6 months of commits in a single full sync |
 
 The GitHub API in-memory cache (1-hour TTL) prevents rate-limiting on the
 file tree endpoint. DSA stats are served entirely from PostgreSQL with no
@@ -260,14 +264,14 @@ upstream API calls on page load.
 
 ### How to scale further
 
-| Bottleneck | Solution |
-|------------|---------|
-| Static assets + images | Add Cloudflare CDN in front of Nginx |
-| API throughput | Add Redis cache for `GET /dsa/stats` (low-churn data) |
-| DB read load | Add a PostgreSQL read replica; route GET queries to it |
-| Concurrent connections | Increase `uvicorn --workers` count (CPU × 2 + 1) |
-| Storage for media | Migrate `/backend/media` volume to S3 / Cloudflare R2 |
-| Multi-region | Containerise with Kubernetes; deploy to managed cluster |
+| Bottleneck             | Solution                                                |
+| ---------------------- | ------------------------------------------------------- |
+| Static assets + images | Add Cloudflare CDN in front of Nginx                    |
+| API throughput         | Add Redis cache for `GET /dsa/stats` (low-churn data)   |
+| DB read load           | Add a PostgreSQL read replica; route GET queries to it  |
+| Concurrent connections | Increase `uvicorn --workers` count (CPU × 2 + 1)        |
+| Storage for media      | Migrate `/backend/media` volume to S3 / Cloudflare R2   |
+| Multi-region           | Containerise with Kubernetes; deploy to managed cluster |
 
 The current architecture hits no fundamental ceiling until ~2,000–5,000
 concurrent users. At that scale, the migration path is:
@@ -322,21 +326,21 @@ dimension/
 
 Full interactive docs at `/api/v1/docs` when running locally.
 
-| Method | Route | Auth | Purpose |
-|--------|-------|------|---------|
-| POST | `/api/v1/auth/login` | — | Get JWT token |
-| GET | `/api/v1/content/{section}` | — | List published content |
-| GET | `/api/v1/content/{section}/{slug}` | — | Get single content + markdown |
-| POST | `/api/v1/content/upload` | Admin | Upload markdown file |
-| PATCH | `/api/v1/content/{id}` | Admin | Toggle publish / update |
-| DELETE | `/api/v1/content/{id}` | Admin | Delete |
-| POST | `/api/v1/content/{id}/images` | Admin | Attach images |
-| GET | `/api/v1/github/dsa/stats` | — | Full dashboard stats (DB only) |
-| GET | `/api/v1/github/dsa/tree` | — | Repo file tree (1-hour cache) |
-| GET | `/api/v1/github/dsa/file/{path}` | — | Solution code + metadata |
-| POST | `/api/v1/github/dsa/sync` | — | Incremental sync |
-| POST | `/api/v1/github/dsa/sync/full` | — | Full re-sync |
-| POST | `/api/v1/github/webhook` | HMAC | Auto-sync on GitHub push |
+| Method | Route                              | Auth  | Purpose                        |
+| ------ | ---------------------------------- | ----- | ------------------------------ |
+| POST   | `/api/v1/auth/login`               | —     | Get JWT token                  |
+| GET    | `/api/v1/content/{section}`        | —     | List published content         |
+| GET    | `/api/v1/content/{section}/{slug}` | —     | Get single content + markdown  |
+| POST   | `/api/v1/content/upload`           | Admin | Upload markdown file           |
+| PATCH  | `/api/v1/content/{id}`             | Admin | Toggle publish / update        |
+| DELETE | `/api/v1/content/{id}`             | Admin | Delete                         |
+| POST   | `/api/v1/content/{id}/images`      | Admin | Attach images                  |
+| GET    | `/api/v1/github/dsa/stats`         | —     | Full dashboard stats (DB only) |
+| GET    | `/api/v1/github/dsa/tree`          | —     | Repo file tree (1-hour cache)  |
+| GET    | `/api/v1/github/dsa/file/{path}`   | —     | Solution code + metadata       |
+| POST   | `/api/v1/github/dsa/sync`          | —     | Incremental sync               |
+| POST   | `/api/v1/github/dsa/sync/full`     | —     | Full re-sync                   |
+| POST   | `/api/v1/github/webhook`           | HMAC  | Auto-sync on GitHub push       |
 
 ---
 
@@ -345,44 +349,21 @@ Full interactive docs at `/api/v1/docs` when running locally.
 ### In Progress / Near-term
 
 - [ ] **Home page quick-glimpse panel** — hero section that surfaces DSA
-  stats (total solved, streak, last problem) and a blog post preview card
-  so first-time visitors immediately see active work without navigating away
-
-- [ ] **Problem accepted / not-accepted status** — add a `status` field to
-  `dsa_problems` (accepted | attempted | revisit) parsed from a comment
-  annotation in solution files; filter heatmap and chart to accepted only
-
-- [ ] **Real streak calculation** — remove the hardcoded base offset (45);
-  derive actual streak from `first_seen_at` timestamps on accepted problems
-  rather than from commit activity
-
-### Medium-term
+      stats (total solved, streak, last problem) and a blog post preview card
+      so first-time visitors immediately see active work without navigating away
 
 - [ ] **SEO + meta tags** — Open Graph images, `<meta>` descriptions,
-  JSON-LD structured data for blog posts and projects
+      JSON-LD structured data for blog posts and projects
 
 - [ ] **RSS feed** — `GET /api/v1/content/blog/feed.xml` for readers and
-  aggregators
+      aggregators
 
 - [ ] **Full-text search** — PostgreSQL `tsvector` index on `metajson` for
-  searching titles, summaries, and tags across all content
+      searching titles, summaries, and tags across all content
 
-- [ ] **Reading analytics** — lightweight page-view counter per slug
-  (no third-party tracking; server-side increment in PostgreSQL)
-
-### Long-term
-
-- [ ] **Redis caching layer** — cache `GET /dsa/stats` (5-minute TTL) and
-  content list responses to reduce DB load at scale
-
-- [ ] **CDN for media** — move `/backend/media` to Cloudflare R2 with a
-  public bucket; serve images from the CDN edge
-
-- [ ] **Newsletter integration** — email capture on blog posts with a
-  self-hosted list (Listmonk or similar)
-
-- [ ] **GitHub Actions CD** — on push to `main`: run linter → build Docker
-  images → SSH deploy to VPS automatically
+- [ ] **Problem accepted / not-accepted status** — add a `status` field to
+      `dsa_problems` (accepted | attempted | revisit) parsed from a comment
+      annotation in solution files; filter heatmap and chart to accepted only
 
 ---
 
@@ -443,4 +424,4 @@ Feature ideas and bug reports welcome via GitHub Issues.
 
 ---
 
-*Built incrementally with [Claude Code](https://claude.ai/code) — Energy meets Evolution.*
+_Built incrementally with [Claude Code](https://claude.ai/code) — Energy meets Evolution._
