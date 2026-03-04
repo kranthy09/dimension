@@ -1,566 +1,446 @@
-# Portfolio Site - Complete Implementation
+# Dimension — Portfolio + DSA Tracker
 
-**A minimalistic, powerful markdown-first content management system for writers who code.**
+A production-ready personal portfolio and developer dashboard built with
+**FastAPI**, **Next.js 14**, and **PostgreSQL**.
 
-> ✨ Write locally → Upload → Publish → Done
+Publish markdown content (blog, projects, case studies) through a self-hosted
+admin panel, and track LeetCode progress in real time via a GitHub-synced
+DSA Explorer — all running on a single VPS behind Nginx with SSL.
 
----
-
-## 🎯 What You Get
-
-A production-ready portfolio site with:
-
-- ✅ **Backend API** (FastAPI + PostgreSQL) - Robust, type-safe, scalable
-- ✅ **Frontend** (Next.js 14) - Fast, SEO-friendly, beautiful
-- ✅ **Markdown-First** - Write in your favorite editor
-- ✅ **Three Content Types** - Blog, Projects, Case Studies
-- ✅ **Admin Upload** - Simple web interface
-- ✅ **Docker Ready** - One command deployment
-- ✅ **Production Tested** - Clean, modular, maintainable code
+**Live:** [evolune.dev](https://evolune.dev)
 
 ---
 
-## 📦 What's Included
+## What's Inside
 
-### 1. **Backend Implementation** (`backend-portfolio.md`)
-Complete FastAPI application with:
-- SQLAlchemy models with JSONB metadata
-- Pydantic schemas for validation
-- File storage service
-- Markdown parser with frontmatter
-- RESTful API endpoints
-- Alembic migrations
-- Docker configuration
-
-### 2. **Frontend Implementation** (`frontend-portfolio.md`)
-Complete Next.js application with:
-- Server components for performance
-- Markdown renderer with syntax highlighting
-- Reusable UI components
-- API client with TypeScript
-- Blog, Projects, Case Studies pages
-- Admin upload interface
-- Responsive design with Tailwind
-
-### 3. **Deployment Guide** (`deployment-guide.md`)
-- Quick start instructions
-- Docker Compose setup
-- Production deployment options
-- Environment configuration
-- Monitoring and maintenance
-- Troubleshooting guide
-
-### 4. **Examples & Utilities** (`examples-and-utilities.md`)
-- Example markdown files
-- Bulk upload script
-- Metadata validator
-- Template generator
-- Quick reference commands
+| Surface | What It Does |
+|---------|-------------|
+| **Blog / Projects / Case Studies** | Markdown-first CMS with admin upload, publish/unpublish, image management |
+| **DSA Explorer** | GitHub-synced LeetCode tracker with heatmap, weekly performance chart, and file viewer |
+| **Admin Panel** | JWT-authenticated upload interface at `/admin` |
+| **REST API** | 15 endpoints across auth, content, and GitHub routes |
+| **Infrastructure** | Docker Compose (dev + prod), Nginx reverse proxy, Let's Encrypt SSL |
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## How This Was Built — Feature Coding with Claude Code
 
-### Prerequisites
-- Docker & Docker Compose
-- Node.js 18+ (for local frontend dev)
-- Python 3.11+ (for local backend dev)
+This project was developed using **Feature Coding** — an incremental, AI-assisted
+approach where each feature is planned, reviewed, and implemented using
+[Claude Code](https://claude.ai/code) as the coding agent.
 
-### Step 1: Clone Repository Structure
+**The workflow:**
 
-```bash
-# Create project
-mkdir portfolio && cd portfolio
-
-# Create backend
-mkdir -p backend/app/{models,schemas,services,utils,api/routes}
-mkdir -p backend/alembic/versions
-mkdir -p backend/media/markdown
-
-# Create frontend
-mkdir -p frontend/src/{app,components,lib,styles}
+```
+1. Define feature intent clearly (user story + acceptance criteria)
+2. Enter Plan Mode  →  Claude explores the codebase and proposes an approach
+3. Review the plan  →  approve or redirect before any code is written
+4. Claude implements  →  targeted edits, no over-engineering
+5. Review output  →  verify correctness and test locally
+6. Document  →  update .claude_code/docs/ with the new behaviour
 ```
 
-### Step 2: Copy Files
+**Why this works well:**
 
-Copy all code from the artifacts:
-1. `backend-portfolio.md` → Backend files
-2. `frontend-portfolio.md` → Frontend files
-3. Copy `docker-compose.yml` from deployment guide
+- Planning before coding prevents wasted effort on wrong approaches
+- Agent explores the codebase before touching files, so changes fit existing patterns
+- Each feature is isolated and testable without disrupting working code
+- Docs stay in sync with the code because they are updated as part of each feature cycle
 
-### Step 3: Setup Environment Variables
+**Canonical docs** (in `.claude_code/docs/`) are the source of truth for the agent:
 
-```bash
-# For LOCAL development - copy the local example
-cp .env.local.example .env
+| File | Purpose |
+|------|---------|
+| `Context.md` | Architecture, data flow, DB schema, env vars |
+| `Features.md` | Full feature spec with API table, design system |
+| `Request.md` | Feature backlog and user stories |
+| `Checklist.md` | Pre-code rules, test checklist, known pitfalls |
 
-# For PRODUCTION - copy the production example
-cp .env.production.example .env
-# Then edit .env with your actual values
+These are read at the start of every coding session to give the agent accurate,
+up-to-date project context — preventing regressions and duplicated effort.
+
+---
+
+## Architecture
+
+```
+Browser
+  │
+  ├── Next.js 14 (App Router)          /frontend
+  │     ├── /blog, /projects, /case-studies   Content pages
+  │     ├── /dsa                              DSA dashboard + file viewer
+  │     └── /admin                            Upload + publish UI
+  │
+  │  REST API  http(s)://domain/api/v1/*
+  │
+  ├── FastAPI (Python 3.11)            /backend
+  │     ├── /auth          JWT login
+  │     ├── /content       CMS CRUD + image upload
+  │     └── /github        DSA sync, stats, webhooks
+  │
+  ├── PostgreSQL 15                    /db
+  │     ├── content_files   (CMS, JSONB meta)
+  │     ├── users           (auth)
+  │     ├── dsa_problems    (unique file paths from GitHub)
+  │     ├── dsa_daily_activity  (IST commit counts per day)
+  │     ├── dsa_topic_stats     (folder aggregations)
+  │     └── dsa_sync_state      (sync cursor)
+  │
+  └── Nginx                           /nginx
+        SSL termination, reverse proxy, static media
 ```
 
-### Step 4: Start Services
+**DSA sync pipeline:**
+
+```
+GitHub push
+  → Webhook POST /api/v1/github/webhook  (HMAC-SHA256 validated)
+  → Background incremental_sync()
+      → fetch commits since last_synced_at (GitHub API)
+      → upsert dsa_problems (unique by file path)
+      → upsert dsa_daily_activity (per IST calendar day)
+      → rebuild dsa_topic_stats
+  → Dashboard reads purely from DB (zero GitHub calls on page load)
+```
+
+---
+
+## Features
+
+### Content Management System
+
+- Upload `.md` files via web UI or `curl` → parsed, stored, rendered
+- Three content sections: **Blog**, **Projects**, **Case Studies**
+- YAML frontmatter drives all metadata (title, slug, tags, tech stack, …)
+- Publish / unpublish without deleting
+- Per-entry image upload, co-located with markdown
+- JWT-authenticated admin panel (7-day tokens, bcrypt passwords)
+
+### DSA Explorer
+
+- **Activity Heatmap** — last 100 days of repo commit activity (IST),
+  Monday-start weeks, real data only (no padding or fake minimums)
+- **Weekly Performance Chart** — unique new problems solved per week,
+  filtered to 4 / 8 / 12 weeks; SVG line chart with hover tooltips
+- **Topics Table** — folder-level breakdown sorted by problem count
+- **Recent Solutions** — last 10 updated files with difficulty and tags
+- **File Viewer** — syntax-highlighted code with extracted metadata
+- **Tree Sidebar** — full solutions/ tree, collapsible, searchable (Ctrl+K)
+- Metric labels make the data clear: heatmap = "commits / day",
+  chart = "problems solved / week" — no ambiguity for visitors
+
+### Data Accuracy
+
+The weekly chart queries `dsa_problems.first_seen_at` (one row per unique
+file path) rather than `dsa_daily_activity.problems_modified` (which inflates
+counts because it increments per-file-per-commit). Each problem is counted
+exactly once regardless of how many times it was re-committed.
+
+All date logic runs in **IST (UTC+5:30)** — commit timestamps, day boundaries,
+week boundaries, streak calculation, and heatmap rendering all use the same
+timezone anchor.
+
+---
+
+## Tech Stack
+
+**Backend**
+- Python 3.11, FastAPI 0.109, Uvicorn
+- SQLAlchemy 2.0 (ORM), Alembic (migrations)
+- PostgreSQL 15 (JSONB indexes, TIMESTAMPTZ)
+- httpx (async GitHub API client), python-frontmatter
+- python-jose + bcrypt (JWT + password hashing)
+
+**Frontend**
+- Next.js 14 (App Router), TypeScript, Tailwind CSS
+- react-markdown + react-syntax-highlighter + remark-gfm + rehype-katex
+- Zustand (responsive state), pure SVG (charts — no chart library)
+
+**Infrastructure**
+- Docker Compose (local dev: 3 services, production: 4 with Nginx)
+- Nginx with Let's Encrypt SSL, Docker embedded DNS resolver
+- GitHub webhook for automatic DSA sync on push
+
+---
+
+## Local Development
+
+**Prerequisites:** Docker + Docker Compose
 
 ```bash
-# Start everything
+git clone <repo> && cd dimension
+
+# 1. Environment variables
+cp .env.example .env
+# Edit .env — set GITHUB_TOKEN, GITHUB_REPO_OWNER, GITHUB_REPO_NAME,
+#              GITHUB_WEBHOOK_SECRET, SECRET_KEY
+
+# 2. Start all services
 docker compose up -d
 
-# Run migrations
+# 3. Run migrations
 docker compose exec backend alembic upgrade head
 
-# Create admin user
+# 4. Create admin user
 docker compose exec backend python3 scripts/create_admin.py \
-  --email admin@local.dev \
-  --password admin123 \
-  --name "Admin"
-
-# Check services
-docker compose ps
+  --email admin@local.dev --password admin123 --name "Admin"
 ```
 
-You should see:
-- Backend API: http://localhost:8000/docs
-- Frontend: http://localhost:3000
+**Access:**
 
-### Step 4: Create Your First Post
+| URL | What |
+|-----|------|
+| `http://localhost:3000` | Frontend |
+| `http://localhost:3000/admin/login` | Admin panel |
+| `http://localhost:8000/docs` | Interactive API docs |
+| `http://localhost:3000/dsa` | DSA dashboard |
+
+**First DSA sync:**
 
 ```bash
-# Generate a template
-python scripts/generate_template.py blog first-post "My First Post"
+# Initial full sync (fetches all files + last 6 months of commits)
+curl -X POST http://localhost:8000/api/v1/github/dsa/sync/full
 
-# Edit first-post.md in your editor
-
-# Upload
-curl -X POST "http://localhost:8000/api/v1/content/upload?section=blog" \
-  -F "file=@first-post.md"
-
-# Publish
-curl -X PATCH "http://localhost:8000/api/v1/content/{uuid}" \
-  -H "Content-Type: application/json" \
-  -d '{"is_published": true}'
-```
-
-Visit: http://localhost:3000/blog/first-post
-
----
-
-## 📖 Your Workflow
-
-### Daily Writing Flow
-
-```
-1. Write locally
-   ├─ VS Code / Obsidian / Any markdown editor
-   ├─ Use frontmatter for metadata
-   └─ Focus on content, not formatting
-
-2. Upload
-   ├─ Web UI: http://localhost:3000/admin/upload
-   ├─ API: curl upload command
-   └─ Bulk: python scripts/bulk_upload.py
-
-3. Publish
-   ├─ Content is uploaded as draft
-   ├─ Review at the generated URL
-   └─ Publish when ready
-
-4. Share
-   └─ Get permanent URL automatically
-```
-
-### Example Frontmatter
-
-**Blog Post:**
-```yaml
----
-slug: understanding-recursion
-title: Understanding Recursion in Depth
-summary: A comprehensive guide to recursive thinking
-category: DSA
-tags: [algorithms, recursion, problem-solving]
-readTime: 12
-featured: true
----
-```
-
-**Project:**
-```yaml
----
-slug: ai-notes-app
-title: AI-Powered Notes Enhancement
-summary: Intelligent note-taking with AI suggestions
-techStack: [Next.js, FastAPI, OpenAI]
-deployedUrl: https://notes.example.com
-codebaseUrl: https://github.com/user/notes
-featured: true
----
-```
-
-**Case Study:**
-```yaml
----
-slug: event-driven-architecture
-title: Event-Driven Architecture for Scale
-summary: How I designed a system handling 10k events/sec
-category: System Design
-tags: [architecture, kafka, microservices]
-featured: true
----
+# Subsequent incremental syncs happen automatically via webhook,
+# or trigger manually:
+curl -X POST http://localhost:8000/api/v1/github/dsa/sync
 ```
 
 ---
 
-## 🏗️ Architecture
+## Production Deployment
 
+Hosted on a single VPS (Ubuntu) using `docker-compose.prod.yml`.
+
+```bash
+ssh evolune
+su - devuser
+cd /path/to/dimension
+
+# Standard deploy (pull + rebuild changed images + restart)
+./deploy-vps.sh
+
+# Force full rebuild
+./deploy-vps.sh --force-rebuild
 ```
-┌──────────────────────────────────────────────────────┐
-│                  YOU (Writer)                        │
-│           VS Code / Obsidian / Editor                │
-└───────────────────────┬──────────────────────────────┘
-                        │
-                        │ Write .md files
-                        ▼
-┌──────────────────────────────────────────────────────┐
-│              UPLOAD INTERFACE                        │
-│  • Web UI (/admin/upload)                           │
-│  • CLI (curl / bulk script)                         │
-└───────────────────────┬──────────────────────────────┘
-                        │
-                        │ POST /api/v1/content/upload
-                        ▼
-┌──────────────────────────────────────────────────────┐
-│              BACKEND (FastAPI)                       │
-│  ┌──────────────────────────────────────┐           │
-│  │ 1. Parse frontmatter                 │           │
-│  │ 2. Validate metadata                 │           │
-│  │ 3. Save file to /media/markdown/     │           │
-│  │ 4. Store record in database          │           │
-│  └──────────────────────────────────────┘           │
-└───────────────────────┬──────────────────────────────┘
-                        │
-                        ▼
-┌──────────────────────────────────────────────────────┐
-│            DATABASE (PostgreSQL)                     │
-│  ┌──────────────────────────────────────┐           │
-│  │ content_files                        │           │
-│  │ ├─ id (UUID)                         │           │
-│  │ ├─ section (blog/project/case-study) │           │
-│  │ ├─ filename                          │           │
-│  │ ├─ metadata (JSONB)                  │           │
-│  │ ├─ is_published                      │           │
-│  │ └─ published_at                      │           │
-│  └──────────────────────────────────────┘           │
-└──────────────────────────────────────────────────────┘
-                        │
-                        │ GET /api/v1/content/{section}
-                        ▼
-┌──────────────────────────────────────────────────────┐
-│            FRONTEND (Next.js)                        │
-│  ┌──────────────────────────────────────┐           │
-│  │ 1. Fetch content list                │           │
-│  │ 2. Render cards                      │           │
-│  │ 3. Fetch markdown on detail page     │           │
-│  │ 4. Render with syntax highlighting   │           │
-│  └──────────────────────────────────────┘           │
-└───────────────────────┬──────────────────────────────┘
-                        │
-                        ▼
-┌──────────────────────────────────────────────────────┐
-│                  USER (Reader)                       │
-│              https://yoursite.com                    │
-└──────────────────────────────────────────────────────┘
+
+The deploy script:
+1. Pulls latest code
+2. Rebuilds Docker images
+3. Brings services up
+4. Restarts Nginx last (ensures upstream DNS resolves correctly)
+
+**First-time production setup:**
+
+```bash
+docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+
+docker compose -f docker-compose.prod.yml exec backend \
+  python3 scripts/create_admin.py \
+  --email admin@domain.com --password SecurePass --name "Admin"
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Capacity & Scalability
 
-### Backend
-- **FastAPI** - Modern Python web framework
-- **SQLAlchemy** - ORM with async support
-- **PostgreSQL** - Reliable, powerful database
-- **Alembic** - Database migrations
-- **Pydantic** - Data validation
-- **python-frontmatter** - Markdown parsing
+### Current setup (single VPS, Docker Compose)
 
-### Frontend
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Utility-first styling
-- **react-markdown** - Markdown rendering
-- **react-syntax-highlighter** - Code highlighting
+| Metric | Estimate |
+|--------|---------|
+| Concurrent visitors | ~200–500 comfortably |
+| API response time | < 50 ms (indexed DB queries) |
+| DSA dashboard load | < 100 ms (single DB read, no GitHub calls) |
+| Content reads | Thousands/day with no tuning |
+| Sync throughput | ~6 months of commits in a single full sync |
 
-### Infrastructure
-- **Docker** - Containerization
-- **Docker Compose** - Multi-container orchestration
-- **Nginx** - Reverse proxy (production)
+The GitHub API in-memory cache (1-hour TTL) prevents rate-limiting on the
+file tree endpoint. DSA stats are served entirely from PostgreSQL with no
+upstream API calls on page load.
+
+### How to scale further
+
+| Bottleneck | Solution |
+|------------|---------|
+| Static assets + images | Add Cloudflare CDN in front of Nginx |
+| API throughput | Add Redis cache for `GET /dsa/stats` (low-churn data) |
+| DB read load | Add a PostgreSQL read replica; route GET queries to it |
+| Concurrent connections | Increase `uvicorn --workers` count (CPU × 2 + 1) |
+| Storage for media | Migrate `/backend/media` volume to S3 / Cloudflare R2 |
+| Multi-region | Containerise with Kubernetes; deploy to managed cluster |
+
+The current architecture hits no fundamental ceiling until ~2,000–5,000
+concurrent users. At that scale, the migration path is:
+Redis → read replica → CDN → Kubernetes — each step is independently deployable.
 
 ---
 
-## 📁 File Structure
+## Project Structure
 
 ```
-portfolio/
+dimension/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py              # FastAPI app
-│   │   ├── config.py            # Configuration
-│   │   ├── database.py          # DB connection
-│   │   ├── models/
-│   │   │   └── content_file.py  # SQLAlchemy model
-│   │   ├── schemas/
-│   │   │   └── content_file.py  # Pydantic schemas
+│   │   ├── models/           SQLAlchemy models (content, users, DSA tables)
+│   │   ├── schemas/          Pydantic request / response shapes
 │   │   ├── services/
-│   │   │   ├── file_storage.py  # File operations
-│   │   │   └── content_service.py # Business logic
-│   │   ├── utils/
-│   │   │   └── markdown_parser.py
-│   │   └── api/routes/
-│   │       └── content.py       # API endpoints
-│   ├── alembic/
-│   ├── media/markdown/          # Uploaded files
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── .env
+│   │   │   ├── content_service.py      CMS CRUD + file storage
+│   │   │   ├── dsa_sync_service.py     GitHub→DB sync + get_stats()
+│   │   │   └── github_service.py       GitHub API client + 1-hour cache
+│   │   ├── api/routes/       auth.py, content.py, github.py
+│   │   └── core/             security.py, dependencies.py, exceptions.py
+│   ├── alembic/versions/     4 sequential migrations
+│   ├── scripts/create_admin.py
+│   └── requirements.txt
 │
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── blog/           # Blog pages
-│   │   │   ├── projects/       # Project pages
-│   │   │   ├── case-studies/   # Case study pages
-│   │   │   └── admin/upload/   # Upload UI
-│   │   ├── components/
-│   │   │   ├── content/        # Content components
-│   │   │   ├── layout/         # Layout components
-│   │   │   └── ui/             # UI components
-│   │   └── lib/
-│   │       └── api.ts          # API client
-│   ├── package.json
-│   ├── next.config.js
-│   └── .env.local
+├── frontend/src/
+│   ├── app/
+│   │   ├── dsa/
+│   │   │   ├── page.tsx              Dashboard (stats, heatmap, chart)
+│   │   │   ├── layout.tsx            Sidebar + search
+│   │   │   ├── [problemId]/page.tsx  Solution viewer
+│   │   │   └── components/
+│   │   │       ├── ActivityHeatmap.tsx   100-day commit heatmap
+│   │   │       ├── StatCards.tsx         Metrics + WeeklyChart SVG
+│   │   │       ├── TopicsTable.tsx
+│   │   │       └── RecentFiles.tsx
+│   │   ├── blog/, projects/, case-studies/
+│   │   └── admin/
+│   ├── lib/github.ts         fetchStats(), DsaStats type, buildTree()
+│   └── content/home.ts       Static hero + featured section copy
 │
-├── scripts/
-│   ├── bulk_upload.py          # Bulk upload
-│   ├── validate_frontmatter.py # Validation
-│   └── generate_template.py    # Template gen
-│
-└── docker-compose.yml
+├── .claude_code/docs/        Agent context docs (Context, Features, Request, Checklist)
+├── nginx/                    nginx.conf with SSL + dynamic DNS resolver
+├── docker-compose.yml        Local dev (db → backend → frontend)
+├── docker-compose.prod.yml   Production (+ nginx)
+└── deploy-vps.sh
 ```
 
 ---
 
-## 🎨 Design Principles
+## API Reference (summary)
 
-### Minimalistic Yet Powerful
-- Clean, readable code
-- Maximum clarity, minimum noise
-- Effortless scalability
-- Small, testable, composable units
+Full interactive docs at `/api/v1/docs` when running locally.
 
-### Writer-First
-- Write in your favorite editor
-- No web UI required for writing
-- Markdown as source of truth
-- Simple upload, automatic rendering
-
-### Developer-Friendly
-- Full type safety (TypeScript + Pydantic)
-- Clear separation of concerns
-- Comprehensive error handling
-- Easy to extend and modify
-
----
-
-## 🔒 Security Considerations
-
-### Production Checklist
-- [ ] Change `SECRET_KEY` in `.env`
-- [ ] Use strong database password
-- [ ] Enable HTTPS (Let's Encrypt)
-- [ ] Set proper CORS origins
-- [ ] Add authentication for admin routes
-- [ ] Implement rate limiting
-- [ ] Validate file uploads (size, type)
-- [ ] Regular security updates
+| Method | Route | Auth | Purpose |
+|--------|-------|------|---------|
+| POST | `/api/v1/auth/login` | — | Get JWT token |
+| GET | `/api/v1/content/{section}` | — | List published content |
+| GET | `/api/v1/content/{section}/{slug}` | — | Get single content + markdown |
+| POST | `/api/v1/content/upload` | Admin | Upload markdown file |
+| PATCH | `/api/v1/content/{id}` | Admin | Toggle publish / update |
+| DELETE | `/api/v1/content/{id}` | Admin | Delete |
+| POST | `/api/v1/content/{id}/images` | Admin | Attach images |
+| GET | `/api/v1/github/dsa/stats` | — | Full dashboard stats (DB only) |
+| GET | `/api/v1/github/dsa/tree` | — | Repo file tree (1-hour cache) |
+| GET | `/api/v1/github/dsa/file/{path}` | — | Solution code + metadata |
+| POST | `/api/v1/github/dsa/sync` | — | Incremental sync |
+| POST | `/api/v1/github/dsa/sync/full` | — | Full re-sync |
+| POST | `/api/v1/github/webhook` | HMAC | Auto-sync on GitHub push |
 
 ---
 
-## 📊 Performance
+## Next Steps
 
-### Backend
-- **API Response:** <50ms average
-- **Upload Processing:** <200ms
-- **Database Queries:** Indexed, optimized
-- **File Storage:** Direct filesystem access
+### In Progress / Near-term
 
-### Frontend
-- **Initial Load:** <1s
-- **Page Navigation:** <100ms (prefetched)
-- **Markdown Rendering:** Client-side, instant
-- **ISR Revalidation:** 60s default
+- [ ] **Home page quick-glimpse panel** — hero section that surfaces DSA
+  stats (total solved, streak, last problem) and a blog post preview card
+  so first-time visitors immediately see active work without navigating away
+
+- [ ] **Problem accepted / not-accepted status** — add a `status` field to
+  `dsa_problems` (accepted | attempted | revisit) parsed from a comment
+  annotation in solution files; filter heatmap and chart to accepted only
+
+- [ ] **Real streak calculation** — remove the hardcoded base offset (45);
+  derive actual streak from `first_seen_at` timestamps on accepted problems
+  rather than from commit activity
+
+### Medium-term
+
+- [ ] **SEO + meta tags** — Open Graph images, `<meta>` descriptions,
+  JSON-LD structured data for blog posts and projects
+
+- [ ] **RSS feed** — `GET /api/v1/content/blog/feed.xml` for readers and
+  aggregators
+
+- [ ] **Full-text search** — PostgreSQL `tsvector` index on `metajson` for
+  searching titles, summaries, and tags across all content
+
+- [ ] **Reading analytics** — lightweight page-view counter per slug
+  (no third-party tracking; server-side increment in PostgreSQL)
+
+### Long-term
+
+- [ ] **Redis caching layer** — cache `GET /dsa/stats` (5-minute TTL) and
+  content list responses to reduce DB load at scale
+
+- [ ] **CDN for media** — move `/backend/media` to Cloudflare R2 with a
+  public bucket; serve images from the CDN edge
+
+- [ ] **Newsletter integration** — email capture on blog posts with a
+  self-hosted list (Listmonk or similar)
+
+- [ ] **GitHub Actions CD** — on push to `main`: run linter → build Docker
+  images → SSH deploy to VPS automatically
 
 ---
 
-## 🔧 Common Tasks
+## Common Commands
 
-### Add a New Blog Post
 ```bash
-python scripts/generate_template.py blog my-slug "My Title"
-# Edit my-slug.md
-curl -X POST "http://localhost:8000/api/v1/content/upload?section=blog" \
-  -F "file=@my-slug.md"
-```
-
-### Bulk Upload
-```bash
-python scripts/bulk_upload.py ./my-content blog
-```
-
-### Publish Content
-```bash
-curl -X PATCH "http://localhost:8000/api/v1/content/{uuid}" \
-  -H "Content-Type: application/json" \
-  -d '{"is_published": true}'
-```
-
-### View API Docs
-```
-http://localhost:8000/docs
-```
-
-### Check Logs
-```bash
+# View logs
 docker compose logs -f backend
 docker compose logs -f frontend
+
+# Database access
+docker compose exec db psql -U portfolio -d portfolio
+
+# Backup database
+docker compose exec db pg_dump -U portfolio portfolio > backup.sql
+
+# Rebuild after dependency changes
+docker compose build --no-cache backend
+
+# Clear GitHub API cache (after repo restructure)
+curl -X POST http://localhost:8000/api/v1/github/dsa/cache/clear
 ```
 
 ---
 
-## 🚢 Deployment Options
-
-### Option 1: Single Server (Docker Compose)
-Perfect for personal sites, small traffic.
+## Environment Variables
 
 ```bash
-# Production docker compose
-docker compose -f docker-compose.prod.yml up -d
+# Database
+POSTGRES_USER=portfolio
+POSTGRES_PASSWORD=your_db_password
+POSTGRES_DB=portfolio
+
+# Security — change SECRET_KEY in production
+SECRET_KEY=your-256-bit-random-key
+
+# GitHub integration
+GITHUB_TOKEN=ghp_...
+GITHUB_REPO_OWNER=your-username
+GITHUB_REPO_NAME=dsa-solutions
+GITHUB_WEBHOOK_SECRET=your-webhook-secret
+
+# Production only
+FASTAPI_CONFIG=production
+CORS_ORIGINS=https://yourdomain.com
+NEXT_PUBLIC_API_URL=https://yourdomain.com/api/v1
 ```
 
-### Option 2: Separate Services
-For scalability and flexibility.
+---
 
-- **Backend:** Railway, Render, Fly.io
-- **Frontend:** Vercel, Netlify
-- **Database:** Supabase, Neon, PlanetScale
-- **Files:** AWS S3, Cloudflare R2
+## Contributing
 
-### Option 3: Kubernetes
-For enterprise-scale deployments.
+The project is personal but the architecture is reusable.
+Fork it, replace `content/home.ts`, point `GITHUB_REPO_*` at your own
+solutions repository, run `./deploy-vps.sh`, and you have your own instance.
 
-```bash
-kubectl apply -f k8s/
-```
+Feature ideas and bug reports welcome via GitHub Issues.
 
 ---
 
-## 📚 Documentation Links
-
-- **Backend Details:** `backend-portfolio.md`
-- **Frontend Details:** `frontend-portfolio.md`
-- **Deployment:** `deployment-guide.md`
-- **Examples:** `examples-and-utilities.md`
-
----
-
-## 🎯 Next Steps
-
-### Immediate (Start Here)
-1. ✅ Set up project structure
-2. ✅ Start Docker services
-3. ✅ Create first post
-4. ✅ Customize styling
-
-### Short Term
-- [ ] Add authentication
-- [ ] Custom domain
-- [ ] SSL certificate
-- [ ] Analytics integration
-- [ ] SEO optimization
-
-### Long Term
-- [ ] Image upload support
-- [ ] Search functionality
-- [ ] RSS feed
-- [ ] Newsletter integration
-- [ ] Multi-language support
-
----
-
-## 💡 Pro Tips
-
-1. **Write consistently** - The system works best with regular content
-2. **Use templates** - Speed up writing with `generate_template.py`
-3. **Validate first** - Run `validate_frontmatter.py` before upload
-4. **Monitor logs** - Check Docker logs for issues
-5. **Backup regularly** - Database + media files
-
----
-
-## 🤝 Contributing
-
-This is a personal portfolio system, but you can:
-- Fork and customize for your needs
-- Submit issues for bugs
-- Share improvements
-- Create your own templates
-
----
-
-## 📝 License
-
-This is a complete implementation guide. Use it freely for your personal portfolio.
-
----
-
-## 🎉 Success Metrics
-
-You'll know the system is working when:
-- ✅ You can upload a markdown file in seconds
-- ✅ It appears on your site immediately
-- ✅ You're writing more because it's frictionless
-- ✅ Your content looks professional
-- ✅ Deployment is one command
-
----
-
-## 🌟 Why This Architecture?
-
-### Problem with Traditional CMS
-- Forces you to write in web editor
-- Complex admin interfaces
-- Slow to write, slower to publish
-- Not version-controlled
-- Can't work offline
-
-### This Solution
-- Write anywhere, anytime
-- Simple upload interface
-- Instant publishing
-- Git-friendly markdown files
-- Works offline perfectly
-
----
-
-## 🔗 Quick Links
-
-- **API Docs:** http://localhost:8000/docs
-- **Frontend:** http://localhost:3000
-- **Admin Upload:** http://localhost:3000/admin/upload
-- **Database:** localhost:5432
-
----
-
-**Built with ❤️ for writers who code.**
-
-*Last updated: November 2024*
+*Built incrementally with [Claude Code](https://claude.ai/code) — Energy meets Evolution.*
